@@ -40,7 +40,7 @@ public class SpawnAPIImpl implements SpawnAPI {
         if (rule == null) {
             return Optional.empty();
         }
-        CustomMobTemplate template = plugin.getMobManager().getTemplate(rule.getMobType());
+        CustomMobTemplate template = plugin.getMobManager().getTemplate(rule.getType());
         if (template == null) {
             return Optional.empty();
         }

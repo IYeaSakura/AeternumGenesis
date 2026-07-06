@@ -28,4 +28,8 @@ public class SkillEffectRegistry {
     public Set<String> getTypes() {
         return Collections.unmodifiableSet(effects.keySet());
     }
+
+    public void unregister(String type) {
+        effects.remove(type.toLowerCase());
+    }
 }

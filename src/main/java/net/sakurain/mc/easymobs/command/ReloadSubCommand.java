@@ -12,11 +12,12 @@ public class ReloadSubCommand implements SubCommand {
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String[] args) {
         EasyMobsPlugin plugin = EasyMobsPlugin.getInstance();
+        plugin.reloadConfig();
         plugin.getConfigManager().reloadAll();
-        plugin.getItemSetManager().reload(plugin.getConfigManager().getSetConfigs());
+        plugin.getItemSetManager().load(plugin.getConfigManager().getSetConfigs());
         plugin.getItemManager().reload();
         plugin.getMobManager().reload();
-        plugin.getSkillManager().reload();
+        plugin.getSkillManager().load(plugin.getConfigManager().getSkillConfigs());
         plugin.getSpawnManager().reload();
         sender.sendMessage(MessageUtil.success("Configuration reloaded!"));
         return true;

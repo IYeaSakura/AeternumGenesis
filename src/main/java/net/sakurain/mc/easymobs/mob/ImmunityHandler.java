@@ -66,6 +66,7 @@ public final class ImmunityHandler implements Listener {
             case FREEZE -> immunities.freeze();
             case CONTACT, SUFFOCATION, FALLING_BLOCK, VOID, SUICIDE, STARVATION, CRAMMING, THORNS, FLY_INTO_WALL,
                  KILL, WORLD_BORDER, SONIC_BOOM, MELTING, DRYOUT -> false;
+            default -> false;
         };
     }
 }

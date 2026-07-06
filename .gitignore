@@ -1,4 +1,29 @@
-.doc/
+# Maven
 target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.project
+*.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
-cp.txt
+
+# Test server (local)
+server/
+plugins/
+
+# Local environment
+.env
+.doc/

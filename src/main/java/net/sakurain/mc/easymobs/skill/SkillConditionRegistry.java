@@ -28,4 +28,8 @@ public class SkillConditionRegistry {
     public Set<String> getTypes() {
         return Collections.unmodifiableSet(conditions.keySet());
     }
+
+    public void unregister(String type) {
+        conditions.remove(type.toLowerCase());
+    }
 }

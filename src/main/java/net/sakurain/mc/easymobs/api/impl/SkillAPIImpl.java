@@ -105,7 +105,7 @@ public class SkillAPIImpl implements SkillAPI {
         plugin.getSkillManager().registerCondition(type, () -> new SkillConditionAdapter(factory.get()));
     }
 
-    private record SkillEffectAdapter(SkillEffect apiEffect) implements net.sakurain.mc.easymobs.skill.effect.SkillEffect {
+    public record SkillEffectAdapter(SkillEffect apiEffect) implements net.sakurain.mc.easymobs.skill.effect.SkillEffect {
         @Override
         public String getType() {
             return apiEffect.getType();
@@ -122,7 +122,7 @@ public class SkillAPIImpl implements SkillAPI {
         }
     }
 
-    private record SkillConditionAdapter(SkillCondition apiCondition) implements net.sakurain.mc.easymobs.skill.condition.SkillCondition {
+    public record SkillConditionAdapter(SkillCondition apiCondition) implements net.sakurain.mc.easymobs.skill.condition.SkillCondition {
         @Override
         public String getType() {
             return apiCondition.getType();

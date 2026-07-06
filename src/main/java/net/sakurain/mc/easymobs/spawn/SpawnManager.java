@@ -10,9 +10,11 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -24,12 +26,31 @@ public final class SpawnManager {
     private Map<String, YamlConfiguration> configs = Map.of();
     private List<SpawnRule> rules = List.of();
     private BukkitTask addTask;
+    private final Map<String, Supplier<SpawnCondition>> conditionRegistry = new HashMap<>();
 
     public SpawnManager(Map<String, YamlConfiguration> configs) {
         this.plugin = EasyMobsPlugin.getInstance();
         this.configs = configs == null ? Map.of() : Map.copyOf(configs);
+        registerDefaultConditions();
         load();
         scheduleAddTask();
+    }
+
+    private void registerDefaultConditions() {
+        // Default spawn conditions are created directly by SpawnConditionParser.
+        // This registry is exposed for external plugins via the API.
+    }
+
+    public void registerCondition(String type, Supplier<SpawnCondition> supplier) {
+        conditionRegistry.put(type.toLowerCase(), supplier);
+    }
+
+    public void unregisterCondition(String type) {
+        conditionRegistry.remove(type.toLowerCase());
+    }
+
+    public Set<String> getRegisteredConditionTypes() {
+        return Collections.unmodifiableSet(conditionRegistry.keySet());
     }
 
     /**

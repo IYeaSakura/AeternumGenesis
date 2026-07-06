@@ -77,8 +77,12 @@ public class SkillManager {
         registerCondition("mobs_in_radius", MobsInRadiusCondition::new);
     }
 
-    private void loadTemplates(Map<String, YamlConfiguration> skillConfigs) {
+    public void load(Map<String, YamlConfiguration> skillConfigs) {
         templates.clear();
+        loadTemplates(skillConfigs);
+    }
+
+    private void loadTemplates(Map<String, YamlConfiguration> skillConfigs) {
         for (Map.Entry<String, YamlConfiguration> entry : skillConfigs.entrySet()) {
             String fileName = entry.getKey();
             String id = stripExtension(fileName);
@@ -232,6 +236,22 @@ public class SkillManager {
 
     public void registerCondition(String type, Supplier<SkillCondition> supplier) {
         conditionRegistry.register(type, supplier);
+    }
+
+    public void unregisterEffect(String type) {
+        effectRegistry.unregister(type);
+    }
+
+    public void unregisterCondition(String type) {
+        conditionRegistry.unregister(type);
+    }
+
+    public Set<String> getRegisteredEffectTypes() {
+        return effectRegistry.getTypes();
+    }
+
+    public Set<String> getRegisteredConditionTypes() {
+        return conditionRegistry.getTypes();
     }
 
     public Set<String> getEffectTypes() {

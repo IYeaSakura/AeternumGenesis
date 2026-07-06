@@ -18,6 +18,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntityEventListener implements Listener {
 
@@ -53,9 +57,7 @@ public class EntityEventListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity victim)) return;
         if (MobTracker.getInstance().isCustomMob(victim)) {
-            if (victim.getHealth() - event.getFinalDamage() <= 0) {
-                // Death will be handled by EntityDeathEvent
-            }
+            // Death handling is done in EntityDeathEvent
         }
     }
 
@@ -65,20 +67,23 @@ public class EntityEventListener implements Listener {
         if (!MobTracker.getInstance().isCustomMob(entity)) return;
 
         String templateId = MobTracker.getInstance().getMobTemplateId(entity);
-        CustomMobTemplate template = MobTracker.getInstance().getTemplate(entity).orElse(null);
+        CustomMobTemplate template = MobTracker.getInstance().getTemplate(entity);
         if (template == null) return;
 
         Player killer = entity.getKiller();
         Bukkit.getPluginManager().callEvent(new CustomMobDeathEvent(templateId, entity, killer));
 
-        if (template.getDropTable() != null) {
-            CustomMobTemplate.DropTable dt = template.getDropTable();
-            CustomMobDropEvent dropEvent = new CustomMobDropEvent(templateId, entity, event.getDrops(), event.getDroppedExp());
+        CustomMobTemplate.DropsConfig drops = template.getDrops();
+        if (drops != null) {
+            List<ItemStack> dropItems = resolveDrops(drops);
+            CustomMobDropEvent dropEvent = new CustomMobDropEvent(templateId, entity, dropItems, drops.overrideVanilla() ? drops.experience() : event.getDroppedExp());
             Bukkit.getPluginManager().callEvent(dropEvent);
             if (!dropEvent.isCancelled()) {
-                event.getDrops().clear();
+                if (drops.overrideVanilla()) {
+                    event.getDrops().clear();
+                    event.setDroppedExp(dropEvent.getExperience());
+                }
                 event.getDrops().addAll(dropEvent.getDrops());
-                event.setDroppedExp(dropEvent.getExperience());
             }
         }
 
@@ -106,6 +111,35 @@ public class EntityEventListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity caster)) return;
         if (!MobTracker.getInstance().isCustomMob(caster)) return;
         triggerSkills(caster, null, "ON_TELEPORT", 0);
+    }
+
+    private List<ItemStack> resolveDrops(CustomMobTemplate.DropsConfig drops) {
+        List<ItemStack> result = new ArrayList<>();
+        for (CustomMobTemplate.DropEntry entry : drops.items()) {
+            if (Math.random() * 100.0 > entry.chance()) continue;
+            ItemStack item = resolveItem(entry.item(), entry.amount());
+            if (item != null) result.add(item);
+        }
+        return result;
+    }
+
+    private ItemStack resolveItem(String itemId, int amount) {
+        if (itemId == null || itemId.isEmpty()) return null;
+        if (itemId.startsWith("ezmobs:")) {
+            String templateId = itemId.substring(7);
+            var template = EasyMobsPlugin.getInstance().getItemManager().getTemplate(templateId);
+            if (template == null) return null;
+            var item = net.sakurain.mc.easymobs.item.ItemBuilder.build(template);
+            item.setAmount(amount);
+            return item;
+        }
+        try {
+            var item = new ItemStack(org.bukkit.Material.valueOf(itemId.toUpperCase()));
+            item.setAmount(amount);
+            return item;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private void triggerSkills(LivingEntity caster, LivingEntity target, String trigger, double damage) {
