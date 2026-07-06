@@ -34,8 +34,8 @@ public class BreakDoorGoal extends CustomAIController.BaseGoal {
 
     @Override
     public boolean shouldActivate() {
-        if (config == null || !config.isEnabled()) return false;
-        if (Math.random() > config.getChance()) return false;
+        if (config == null || !config.enabled()) return false;
+        if (Math.random() > config.chance()) return false;
         LivingEntity target = mob.getTarget();
         if (target == null) return false;
         Location eye = mob.getEyeLocation();

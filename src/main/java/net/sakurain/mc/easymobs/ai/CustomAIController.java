@@ -1,17 +1,17 @@
 package net.sakurain.mc.easymobs.ai;
 
 import com.destroystokyo.paper.entity.ai.Goal;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import net.sakurain.mc.easymobs.EasyMobsPlugin;
-import net.sakurain.mc.easymobs.mob.CustomMobTemplate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.sakurain.mc.easymobs.EasyMobsPlugin;
+import net.sakurain.mc.easymobs.mob.CustomMobTemplate;
 
 import java.util.*;
 
@@ -35,35 +35,35 @@ public class CustomAIController {
     }
 
     public void setupAI(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
-        CustomMobTemplate.MobAIConfig ai = template.getAi();
+        CustomMobTemplate.AIConfig ai = template.getAi();
         if (ai == null) return;
 
-        if (ai.isRemoveDefaultGoals()) {
+        if (ai.removeDefaultGoals()) {
             Bukkit.getMobGoals().removeAllGoals(mob);
         }
 
         Bukkit.getMobGoals().addGoal(mob, 1, new SmartTargetGoal(mob, template));
         Bukkit.getMobGoals().addGoal(mob, 2, new SmartAttackGoal(mob, template));
 
-        if (ai.getBehavior() != null && ai.getBehavior().isCircleTarget()) {
+        if (ai.behavior() != null && ai.behavior().circleTarget()) {
             Bukkit.getMobGoals().addGoal(mob, 3, new CircleTargetGoal(mob, template));
         }
 
         CustomMobTemplate.BreakDoorConfig bd = template.getBreakDoor();
-        if (bd != null && bd.isEnabled()) {
+        if (bd != null && bd.enabled()) {
             Bukkit.getMobGoals().addGoal(mob, 4, new BreakDoorGoal(mob, template));
         }
 
-        CustomMobTemplate.TargetingStrategy strategy = ai.getTargetingStrategy();
-        int memory = strategy != null ? strategy.getMaxTargetsMemory() : 5;
+        CustomMobTemplate.TargetingStrategy strategy = ai.targetingStrategy();
+        int memory = strategy != null ? strategy.maxTargetsMemory() : 5;
         aggroTables.put(mob.getUniqueId(), new AggroTable(memory));
         switchCooldowns.put(mob.getUniqueId(), 0L);
     }
 
     public void tick(@NotNull LivingEntity entity, @NotNull CustomMobTemplate template) {
         if (!(entity instanceof Mob mob)) return;
-        CustomMobTemplate.MobAIConfig ai = template.getAi();
-        if (ai == null || !ai.isUseCustomAI()) return;
+        CustomMobTemplate.AIConfig ai = template.getAi();
+        if (ai == null || !ai.useCustomAi()) return;
 
         AggroTable aggro = aggroTables.get(mob.getUniqueId());
         if (aggro != null) aggro.decay(0.95);
@@ -78,13 +78,13 @@ public class CustomAIController {
     }
 
     private void evaluateTargetSwitch(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
-        CustomMobTemplate.MobAIConfig ai = template.getAi();
-        CustomMobTemplate.TargetingStrategy strategy = ai != null ? ai.getTargetingStrategy() : null;
+        CustomMobTemplate.AIConfig ai = template.getAi();
+        CustomMobTemplate.TargetingStrategy strategy = ai != null ? ai.targetingStrategy() : null;
         if (strategy == null) return;
 
         long currentTick = Bukkit.getCurrentTick();
         long lastSwitch = switchCooldowns.getOrDefault(mob.getUniqueId(), 0L);
-        if (currentTick - lastSwitch < strategy.getSwitchInterval()) return;
+        if (currentTick - lastSwitch < strategy.switchInterval()) return;
 
         LivingEntity bestTarget = findBestTarget(mob, template);
         LivingEntity currentTarget = mob.getTarget();
@@ -97,7 +97,7 @@ public class CustomAIController {
         if (currentTarget == null || !currentTarget.equals(bestTarget)) {
             double currentScore = scoreTarget(mob, currentTarget, strategy, template);
             double bestScore = scoreTarget(mob, bestTarget, strategy, template);
-            if (bestScore >= currentScore * (1 + strategy.getSwitchThreshold())) {
+            if (bestScore >= currentScore * (1 + strategy.switchThreshold())) {
                 mob.setTarget(bestTarget);
                 switchCooldowns.put(mob.getUniqueId(), currentTick);
             }
@@ -105,12 +105,12 @@ public class CustomAIController {
     }
 
     private LivingEntity findBestTarget(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
-        CustomMobTemplate.MobAIConfig ai = template.getAi();
-        CustomMobTemplate.TargetingStrategy strategy = ai != null ? ai.getTargetingStrategy() : null;
+        CustomMobTemplate.AIConfig ai = template.getAi();
+        CustomMobTemplate.TargetingStrategy strategy = ai != null ? ai.targetingStrategy() : null;
         if (strategy == null) return null;
 
-        CustomMobTemplate.SenseConfig senses = template.getSenses();
-        double range = ai.getTargetRange();
+        CustomMobTemplate.SensesConfig senses = template.getSenses();
+        double range = ai.targetRange();
         Location loc = mob.getLocation();
         List<LivingEntity> candidates = new ArrayList<>();
 
@@ -118,25 +118,26 @@ public class CustomAIController {
             if (!(e instanceof LivingEntity target)) continue;
             if (target.equals(mob)) continue;
             if (target.isDead()) continue;
-            if (strategy.isPreferPlayers() && !(target instanceof Player)) continue;
+            if (strategy.preferPlayers() && !(target instanceof Player)) continue;
             if (senses != null && !SenseSystem.canSense(mob, target, senses)) continue;
             candidates.add(target);
         }
         if (candidates.isEmpty()) return null;
 
-        return switch (strategy.getType()) {
-            case NEAREST -> candidates.stream()
-                    .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(loc))).orElse(null);
-            case LOWEST_HP -> candidates.stream()
+        String type = strategy.type().toLowerCase();
+        return switch (type) {
+            case "lowest_hp" -> candidates.stream()
                     .min(Comparator.comparingDouble(LivingEntity::getHealth)).orElse(null);
-            case HIGHEST_THREAT -> {
+            case "highest_threat" -> {
                 AggroTable aggro = aggroTables.get(mob.getUniqueId());
                 yield candidates.stream()
                         .max(Comparator.comparingDouble(e -> aggro != null ? aggro.getThreat(e.getUniqueId()) : 0))
                         .orElse(null);
             }
-            case RANDOM -> candidates.get(new Random().nextInt(candidates.size()));
-            case FIRST_SIGHT -> candidates.get(0);
+            case "random" -> candidates.get(new Random().nextInt(candidates.size()));
+            case "first_sight" -> candidates.get(0);
+            default -> candidates.stream()
+                    .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(loc))).orElse(null);
         };
     }
 
@@ -146,29 +147,29 @@ public class CustomAIController {
         if (target == null || target.isDead()) return 0;
         double score;
         double dist = mob.getLocation().distance(target.getLocation());
-        switch (strategy.getType()) {
-            case NEAREST -> score = 1.0 / (dist + 1);
-            case LOWEST_HP -> score = 1.0 / (target.getHealth() + 1);
-            case HIGHEST_THREAT -> {
+        String type = strategy.type().toLowerCase();
+        switch (type) {
+            case "lowest_hp" -> score = 1.0 / (target.getHealth() + 1);
+            case "highest_threat" -> {
                 AggroTable aggro = aggroTables.get(mob.getUniqueId());
                 score = aggro != null ? aggro.getThreat(target.getUniqueId()) : 0;
             }
-            case RANDOM -> score = Math.random();
-            case FIRST_SIGHT -> score = 1.0;
-            default -> score = 0;
+            case "random" -> score = Math.random();
+            case "first_sight" -> score = 1.0;
+            default -> score = 1.0 / (dist + 1);
         }
-        double range = template.getAi().getTargetRange();
+        double range = template.getAi().targetRange();
         if (dist > range * 0.7) score *= 0.5;
         return score;
     }
 
     private void checkLeashRange(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
-        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().getBehavior() : null;
+        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().behavior() : null;
         if (behavior == null) return;
         LivingEntity target = mob.getTarget();
         if (target == null) return;
         double dist = mob.getLocation().distance(target.getLocation());
-        if (dist > behavior.getLeashRange()) {
+        if (dist > behavior.leashRange()) {
             mob.setTarget(null);
         }
     }

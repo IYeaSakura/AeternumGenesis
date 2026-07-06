@@ -114,7 +114,7 @@ public class ItemAPIImpl implements ItemAPI {
     @NotNull
     public Optional<String> getDisplayName(@NotNull String templateId) {
         CustomItemTemplate template = plugin.getItemManager().getTemplate(templateId);
-        return template != null ? Optional.ofNullable(template.getDisplayName()) : Optional.empty();
+        return template != null ? Optional.ofNullable(template.getName()) : Optional.empty();
     }
 
     @Override

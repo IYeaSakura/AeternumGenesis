@@ -193,7 +193,7 @@ public class MobAPIImpl implements MobAPI {
 
     @Override
     public void setMobLevel(@NotNull LivingEntity entity, int level) {
-        CustomMobTemplate template = MobTracker.getInstance().getTemplate(entity).orElse(null);
+        CustomMobTemplate template = MobTracker.getInstance().getTemplate(entity);
         if (template != null) {
             LevelSystem.applyLevel(entity, level, template);
         }

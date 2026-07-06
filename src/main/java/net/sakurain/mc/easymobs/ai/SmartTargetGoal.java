@@ -22,8 +22,8 @@ public class SmartTargetGoal extends CustomAIController.BaseGoal {
 
     @Override
     public boolean shouldActivate() {
-        CustomMobTemplate.MobAIConfig ai = template.getAi();
-        return ai != null && ai.isUseCustomAI();
+        CustomMobTemplate.AIConfig ai = template.getAi();
+        return ai != null && ai.useCustomAi();
     }
 
     @Override

@@ -41,13 +41,13 @@ public class SmartAttackGoal extends CustomAIController.BaseGoal {
         if (attackCooldown > 0) attackCooldown--;
 
         double dist = mob.getLocation().distance(target.getLocation());
-        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().getBehavior() : null;
-        double keepDistance = behavior != null ? behavior.getKeepDistance() : 0;
+        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().behavior() : null;
+        double keepDistance = behavior != null && behavior.keepDistance() ? 8.0 : 0;
 
         if (keepDistance > 0) {
             if (dist < keepDistance - 1) retreat(target);
             else if (dist > keepDistance + 1) mob.getPathfinder().moveTo(target, 1.2);
-            else if (behavior != null && behavior.isStrafe()) strafe(target);
+            else if (behavior != null && behavior.strafe()) strafe(target);
         } else {
             if (dist > 2.0) mob.getPathfinder().moveTo(target, 1.0);
         }

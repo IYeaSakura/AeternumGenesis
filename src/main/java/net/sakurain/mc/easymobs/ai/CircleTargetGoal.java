@@ -22,8 +22,8 @@ public class CircleTargetGoal extends CustomAIController.BaseGoal {
 
     public CircleTargetGoal(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
         super(mob, template);
-        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().getBehavior() : null;
-        this.radius = behavior != null ? behavior.getCircleRadius() : 3.0;
+        CustomMobTemplate.BehaviorConfig behavior = template.getAi() != null ? template.getAi().behavior() : null;
+        this.radius = behavior != null ? behavior.circleRadius() : 3.0;
     }
 
     @Override
