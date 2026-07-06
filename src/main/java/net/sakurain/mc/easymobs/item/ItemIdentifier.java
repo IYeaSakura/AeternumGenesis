@@ -7,8 +7,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import javax.annotation.Nullable;
-
 /**
  * Utility helpers for identifying custom items and sets from ItemStacks.
  */
@@ -36,7 +34,6 @@ public final class ItemIdentifier {
      * @param item the item stack
      * @return template id or null
      */
-    @Nullable
     public static String getTemplateId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
             return null;
@@ -55,7 +52,6 @@ public final class ItemIdentifier {
      * @param item the item stack
      * @return set id or null
      */
-    @Nullable
     public static String getSetId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
             return null;
@@ -74,7 +70,6 @@ public final class ItemIdentifier {
      * @param item the item stack
      * @return template or null
      */
-    @Nullable
     public static CustomItemTemplate getTemplate(ItemStack item) {
         String id = getTemplateId(item);
         if (id == null) {

@@ -169,15 +169,20 @@ public final class CustomItemManager {
         return result;
     }
 
+    @SuppressWarnings("removal")
     private Attribute parseAttribute(String value) {
         if (value == null) {
             return null;
         }
+        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
+        Attribute attribute = Registry.ATTRIBUTE.get(key);
+        if (attribute != null) {
+            return attribute;
+        }
         try {
             return Attribute.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
-            return Registry.ATTRIBUTE.get(key);
+            return null;
         }
     }
 
@@ -376,9 +381,15 @@ public final class CustomItemManager {
         }
     }
 
+    @SuppressWarnings("removal")
     private org.bukkit.Sound parseSound(String value) {
         if (value == null) {
             return null;
+        }
+        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
+        org.bukkit.Sound sound = Registry.SOUNDS.get(key);
+        if (sound != null) {
+            return sound;
         }
         try {
             return org.bukkit.Sound.valueOf(value.toUpperCase());

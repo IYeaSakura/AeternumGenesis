@@ -8,6 +8,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -144,7 +145,7 @@ public final class ItemEffectHandler implements Listener {
         AttributeModifier modifier = new AttributeModifier(key,
                 entry.getAttributeAmount(),
                 entry.getAttributeOperation(),
-                entry.getAttributeSlot());
+                toSlotGroup(entry.getAttributeSlot()));
         instance.addModifier(modifier);
         appendActiveAttribute(player, attribute.getKey().toString());
     }
@@ -294,7 +295,7 @@ public final class ItemEffectHandler implements Listener {
                 NamespacedKey key = new NamespacedKey(modifierNamespaceKey.getNamespace(),
                         UUID.randomUUID().toString());
                 instance.addModifier(new AttributeModifier(key, entry.getAttributeAmount(),
-                        entry.getAttributeOperation(), entry.getAttributeSlot()));
+                        entry.getAttributeOperation(), toSlotGroup(entry.getAttributeSlot())));
             }
             case PARTICLE -> {
                 if (entry.getParticle() != null) {
@@ -313,6 +314,22 @@ public final class ItemEffectHandler implements Listener {
     /**
      * Removes all tracked effects and attributes from every online player and cancels the refresh task.
      */
+    private static EquipmentSlotGroup toSlotGroup(org.bukkit.inventory.EquipmentSlot slot) {
+        if (slot == null) {
+            return EquipmentSlotGroup.ANY;
+        }
+        return switch (slot) {
+            case HAND -> EquipmentSlotGroup.MAINHAND;
+            case OFF_HAND -> EquipmentSlotGroup.OFFHAND;
+            case FEET -> EquipmentSlotGroup.FEET;
+            case LEGS -> EquipmentSlotGroup.LEGS;
+            case CHEST -> EquipmentSlotGroup.CHEST;
+            case HEAD -> EquipmentSlotGroup.HEAD;
+            case BODY -> EquipmentSlotGroup.BODY;
+            case SADDLE -> EquipmentSlotGroup.SADDLE;
+        };
+    }
+
     public void clearAllEffects() {
         if (refreshTask != null) {
             refreshTask.cancel();
