@@ -1,0 +1,36 @@
+# EasyMobs Main Configuration
+
+# Language used for plugin messages (currently only built-in English)
+language: en
+
+# Level system settings
+level:
+  # Health/damage multiplier added per level (0.1 = +10% per level)
+  scale-per-level: 0.1
+  # Whether to show level in mob name
+  show-in-name: true
+
+# Natural spawning settings
+spawning:
+  # Enable ADD mode periodic spawns
+  generate-spawn-points: true
+  # ADD task interval in ticks (20 ticks = 1 second)
+  add-task-interval: 100
+  # Maximum spawn attempts per player per cycle
+  max-spawn-attempts: 10
+  # Minimum distance from player for ADD spawns
+  min-player-distance: 24
+  # Maximum distance from player for ADD spawns
+  max-player-distance: 64
+  # Maximum spawns per player per cycle
+  max-spawns-per-cycle: 3
+
+# Performance settings
+performance:
+  # Particle visibility range in blocks
+  particle-range: 32
+  # BossBar update interval in ticks
+  bossbar-update-interval: 5
+
+# Debug mode (logs extra information)
+debug: false

@@ -1,0 +1,271 @@
+# EasyMobs Example Mob Templates
+# Place files in plugins/EasyMobs/mobs/ (supports subdirectories)
+
+blood_zombie:
+  type: ZOMBIE
+  display_name: "&c✦ &lBlood Moon Zombie"
+  health: 60
+  max_health: 60
+  attributes:
+    - type: ATTACK_DAMAGE
+      amount: 6.0
+      operation: ADD_NUMBER
+    - type: MOVEMENT_SPEED
+      amount: 0.05
+      operation: ADD_NUMBER
+    - type: FOLLOW_RANGE
+      amount: 16.0
+      operation: ADD_NUMBER
+    - type: WATER_MOVEMENT_EFFICIENCY
+      amount: 0.8
+      operation: ADD_NUMBER
+  equipment:
+    helmet:
+      item: iron_helmet
+      drop_chance: 0.0
+    chestplate:
+      item: iron_chestplate
+      drop_chance: 0.0
+    leggings:
+      item: iron_leggings
+      drop_chance: 0.0
+    boots:
+      item: iron_boots
+      drop_chance: 0.0
+    main_hand:
+      item: iron_sword
+      drop_chance: 0.0
+  equipment_effects:
+    enabled: false
+  glowing: true
+  glowing_color: RED
+  bossbar:
+    enabled: true
+    title: "&c✦ Blood Moon Zombie"
+    color: RED
+    style: NOTCHED_20
+    show_to_all: false
+    range: 48
+  particles:
+    - type: REDSTONE
+      location: FEET
+      count: 3
+      offset_x: 0.3
+      offset_y: 0.1
+      offset_z: 0.3
+      color: "#8B0000"
+      size: 1.0
+      interval: 10
+  senses:
+    vision: true
+    hearing: true
+    smell: false
+    vision_range: 32
+    hearing_range: 16
+    smell_range: 0
+  water_behavior:
+    float_on_water: true
+    water_movement_speed: 0.2
+    surface_movement_speed: 0.25
+    can_breathe_underwater: false
+    drown_damage: true
+  immunities:
+    fire: false
+    projectile: false
+    melee: false
+    potion: false
+    sunlight: true
+    explosion: false
+    fall: false
+    drowning: false
+    magic: false
+    freeze: false
+  break_door:
+    enabled: true
+    chance: 0.3
+  ai:
+    use_custom_ai: true
+    remove_default_goals: false
+    target_range: 40
+    always_aggressive: true
+    targeting_strategy:
+      type: NEAREST
+      switch_interval: 60
+      switch_threshold: 0.5
+      prefer_players: true
+      max_targets_memory: 5
+    pathfinding:
+      can_open_doors: true
+      can_pass_doors: true
+      can_float: true
+      avoid_water: false
+      avoid_sun: false
+      avoid_fire: false
+      walk_speed: 1.0
+    behavior:
+      leash_range: 64
+      reaggro_range: 20
+      attack_cooldown: 20
+      circle_target: false
+      circle_radius: 3.0
+      keep_distance: 0.0
+      strafe: false
+  drops:
+    override_vanilla: true
+    items:
+      - item: rotten_flesh
+        amount: "2-4"
+        chance: 1.0
+      - item: bone
+        amount: "1-2"
+        chance: 0.5
+      - item: "ezmobs:blood_moon_sword"
+        amount: 1
+        chance: 0.05
+    experience: 15
+  skills:
+    - trigger: ON_HIT
+      skill_id: zombie_slash
+      chance: 0.3
+    - trigger: ON_DEATH
+      skill_id: blood_burst
+      chance: 1.0
+
+zombie_warrior:
+  type: ZOMBIE
+  display_name: "&6⚔ &lZombie Warrior"
+  health: 200
+  max_health: 200
+  attributes:
+    - type: ATTACK_DAMAGE
+      amount: 12.0
+      operation: ADD_NUMBER
+    - type: MOVEMENT_SPEED
+      amount: -0.03
+      operation: ADD_NUMBER
+    - type: KNOCKBACK_RESISTANCE
+      amount: 0.8
+      operation: ADD_NUMBER
+    - type: ARMOR
+      amount: 10.0
+      operation: ADD_NUMBER
+  equipment:
+    helmet:
+      item: diamond_helmet
+      drop_chance: 0.15
+    chestplate:
+      item: diamond_chestplate
+      drop_chance: 0.15
+    leggings:
+      item: diamond_leggings
+      drop_chance: 0.15
+    boots:
+      item: diamond_boots
+      drop_chance: 0.15
+    main_hand:
+      item: diamond_sword
+      drop_chance: 0.15
+    off_hand:
+      item: totem_of_undying
+      drop_chance: 1.0
+  equipment_effects:
+    enabled: true
+    apply_attributes: true
+    apply_enchantments: true
+    apply_special: false
+  glowing: true
+  glowing_color: GOLD
+  bossbar:
+    enabled: true
+    title: "&6⚔ Zombie Warrior &7[Boss]"
+    color: YELLOW
+    style: NOTCHED_20
+    show_to_all: true
+    range: 128
+  particles:
+    - type: FLAME
+      location: HEAD
+      count: 2
+      offset_x: 0.2
+      offset_y: 0.2
+      offset_z: 0.2
+      interval: 5
+    - type: LAVA
+      location: FEET
+      count: 1
+      offset_x: 0.2
+      offset_y: 0.0
+      offset_z: 0.2
+      interval: 20
+  potion_effects:
+    - type: FIRE_RESISTANCE
+      amplifier: 0
+      ambient: true
+      particles: false
+  immunities:
+    fire: true
+    projectile: false
+    melee: false
+    potion: false
+    sunlight: true
+    explosion: false
+    fall: true
+    drowning: true
+    magic: false
+    freeze: false
+  break_door:
+    enabled: true
+    chance: 1.0
+  ai:
+    use_custom_ai: true
+    remove_default_goals: true
+    target_range: 64
+    always_aggressive: true
+    targeting_strategy:
+      type: HIGHEST_THREAT
+      switch_interval: 100
+      switch_threshold: 0.2
+      prefer_players: true
+      max_targets_memory: 10
+    pathfinding:
+      can_open_doors: true
+      can_pass_doors: true
+      can_float: true
+      avoid_water: false
+      avoid_sun: false
+      avoid_fire: false
+      walk_speed: 1.0
+    behavior:
+      leash_range: 80
+      reaggro_range: 32
+      attack_cooldown: 15
+      circle_target: true
+      circle_radius: 4.0
+      keep_distance: 0.0
+      strafe: false
+  drops:
+    override_vanilla: true
+    items:
+      - item: diamond
+        amount: "2-4"
+        chance: 1.0
+      - item: experience_bottle
+        amount: "4-8"
+        chance: 1.0
+      - item: enchanted_golden_apple
+        amount: "1-2"
+        chance: 0.3
+    experience: 100
+  skills:
+    - trigger: ON_SPAWN
+      skill_id: warrior_roar
+      chance: 1.0
+    - trigger: ON_HIT
+      skill_id: heavy_slash
+      chance: 0.5
+    - trigger: ON_HURT
+      skill_id: enrage
+      chance: 0.2
+    - trigger: ON_DEATH
+      skill_id: warrior_death
+      chance: 1.0

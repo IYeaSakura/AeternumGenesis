@@ -1,0 +1,54 @@
+# EasyMobs Example Item Set
+# Place files in plugins/EasyMobs/sets/ (supports subdirectories)
+
+mirror_flower:
+  name: "&bMirror Flower Set"
+  description:
+    - "&7Wearing 4 Mirror Flower armor pieces grants Resistance II"
+    - "&7Also holding the Mirror Flower Sword grants Strength II"
+
+  base_bonus:
+    required_count: 4
+    required_slots:
+      - slot: HEAD
+        item: mirror_flower_helmet
+      - slot: CHEST
+        item: mirror_flower_chestplate
+      - slot: LEGS
+        item: mirror_flower_leggings
+      - slot: FEET
+        item: mirror_flower_boots
+    effects:
+      - type: potion
+        potion_type: DAMAGE_RESISTANCE
+        duration: -1
+        amplifier: 1
+      - type: particle
+        particle: REDSTONE
+        location: FEET
+        count: 3
+        offset_x: 0.3
+        offset_y: 0.1
+        offset_z: 0.3
+        color: "#00BFFF"
+        dust_size: 1.0
+
+  advanced_bonus:
+    - name: "&bMirror Flower · Complete"
+      extra_requirements:
+        - slot: MAIN_HAND
+          item: mirror_flower_sword
+      effects:
+        - type: potion
+          potion_type: INCREASE_DAMAGE
+          duration: -1
+          amplifier: 1
+        - type: particle
+          particle: REDSTONE
+          location: CENTER
+          count: 5
+          offset_x: 0.5
+          offset_y: 0.5
+          offset_z: 0.5
+          color: "#00BFFF"
+          dust_size: 2.0

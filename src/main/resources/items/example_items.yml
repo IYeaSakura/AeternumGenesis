@@ -1,0 +1,147 @@
+# EasyMobs Example Item Templates
+# Place files in plugins/EasyMobs/items/ (supports subdirectories)
+
+blood_moon_sword:
+  material: NETHERITE_SWORD
+  name: "&c&lBlood Moon Sword"
+  lore:
+    - ""
+    - "&c❣ &7A cursed blade bathed in blood moon light"
+    - "&c❣ &7Its edge thirsts for the living"
+    - ""
+    - "&c▶ &eAttack Damage: &f9"
+    - "&c▶ &eAttack Speed: &f1.6"
+    - "&c▶ &eSpecial: &fInflicts Wither on hit"
+    - ""
+    - "&8Legendary Weapon"
+  custom_model_data: 2001
+  glow: true
+  enchantments:
+    SHARPNESS: 5
+    FIRE_ASPECT: 2
+    SWEEPING_EDGE: 3
+    DURABILITY: 3
+    MENDING: 1
+  hide_enchants: false
+  attributes:
+    - type: ATTACK_DAMAGE
+      amount: 9.0
+      operation: ADD_NUMBER
+      slot: MAIN_HAND
+    - type: ATTACK_SPEED
+      amount: -2.4
+      operation: ADD_NUMBER
+      slot: MAIN_HAND
+  attack_effects:
+    chance: 1.0
+    effects:
+      - type: potion
+        target: VICTIM
+        potion_type: WITHER
+        duration: 100
+        amplifier: 1
+      - type: particle
+        target: VICTIM
+        particle: WITCH
+        count: 5
+        offset_x: 0.3
+        offset_y: 0.5
+        offset_z: 0.3
+
+mirror_flower_helmet:
+  material: DIAMOND_HELMET
+  name: "&b&lMirror Flower Helmet"
+  lore:
+    - ""
+    - "&b❣ &7Moonlight flows like a dream"
+    - ""
+    - "&b▶ &eSet: &fMirror Flower"
+    - "&7Grants Night Vision and bonus health"
+  custom_model_data: 5001
+  glow: true
+  enchantments:
+    PROTECTION: 4
+    RESPIRATION: 3
+    AQUA_AFFINITY: 1
+    DURABILITY: 3
+    MENDING: 1
+  attributes:
+    - type: ARMOR
+      amount: 3.0
+      operation: ADD_NUMBER
+      slot: HEAD
+    - type: ARMOR_TOUGHNESS
+      amount: 3.0
+      operation: ADD_NUMBER
+      slot: HEAD
+  passive_effects:
+    - trigger: WEAR
+      effects:
+        - type: potion
+          potion_type: NIGHT_VISION
+          duration: -1
+          amplifier: 0
+          ambient: true
+          particles: false
+        - type: attribute
+          attribute: MAX_HEALTH
+          amount: 2.0
+          operation: ADD_NUMBER
+          slot: HEAD
+  set_id: "mirror_flower"
+  unbreakable: false
+  item_flags:
+    - HIDE_ATTRIBUTES
+
+admin_helmet:
+  material: NETHERITE_HELMET
+  name: "&b&l『 Crown of the Administrator 』"
+  lore:
+    - "&7A divine crown reserved for administrators"
+    - "&7Grants regeneration, glowing, and resistance"
+  custom_model_data: 3001
+  glow: true
+  enchantments:
+    PROTECTION: 4
+    RESPIRATION: 3
+    AQUA_AFFINITY: 1
+    DURABILITY: 3
+    MENDING: 1
+  attributes:
+    - type: ARMOR
+      amount: 4.0
+      operation: ADD_NUMBER
+      slot: HEAD
+    - type: ARMOR_TOUGHNESS
+      amount: 4.0
+      operation: ADD_NUMBER
+      slot: HEAD
+    - type: MAX_HEALTH
+      amount: 4.0
+      operation: ADD_NUMBER
+      slot: HEAD
+  passive_effects:
+    - trigger: WEAR
+      effects:
+        - type: potion
+          potion_type: GLOWING
+          duration: -1
+          amplifier: 0
+          ambient: true
+          particles: false
+        - type: potion
+          potion_type: REGENERATION
+          duration: -1
+          amplifier: 2
+          ambient: true
+          particles: false
+        - type: potion
+          potion_type: DAMAGE_RESISTANCE
+          duration: -1
+          amplifier: 2
+          ambient: true
+          particles: false
+  unbreakable: true
+  item_flags:
+    - HIDE_ATTRIBUTES
+    - HIDE_UNBREAKABLE

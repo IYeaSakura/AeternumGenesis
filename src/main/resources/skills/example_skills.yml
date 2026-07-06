@@ -1,0 +1,129 @@
+# EasyMobs Example Skill Templates
+# Place files in plugins/EasyMobs/skills/ (supports subdirectories)
+
+zombie_slash:
+  cooldown: 3.0
+  effects:
+    - type: damage
+      target: TARGET
+      amount: 8.0
+    - type: particle
+      particle: SWEEP_ATTACK
+      location: TARGET
+      count: 1
+    - type: sound
+      sound: ENTITY_PLAYER_ATTACK_SWEEP
+      volume: 1.0
+      pitch: 0.9
+
+blood_burst:
+  effects:
+    - type: damage
+      target: NEARBY
+      radius: 4.0
+      amount: 12.0
+      ignore_armor: true
+    - type: particle
+      particle: REDSTONE
+      location: CASTER
+      count: 80
+      offset_x: 2.5
+      offset_y: 1.5
+      offset_z: 2.5
+      color: "#8B0000"
+      dust_size: 2.5
+    - type: particle
+      particle: LAVA
+      location: CASTER
+      count: 20
+      offset_x: 1.0
+      offset_y: 0.5
+      offset_z: 1.0
+    - type: sound
+      sound: ENTITY_GENERIC_EXPLODE
+      volume: 1.5
+      pitch: 0.7
+
+warrior_roar:
+  effects:
+    - type: particle
+      particle: VILLAGER_ANGRY
+      location: CASTER
+      count: 15
+      offset_x: 1.5
+      offset_y: 2.5
+      offset_z: 1.5
+    - type: sound
+      sound: ENTITY_RAVAGER_ROAR
+      volume: 2.0
+      pitch: 0.5
+    - type: damage
+      target: NEARBY
+      radius: 6.0
+      amount: 5.0
+
+heavy_slash:
+  cooldown: 5.0
+  effects:
+    - type: damage
+      target: TARGET
+      amount: 15.0
+    - type: particle
+      particle: SWEEP_ATTACK
+      location: TARGET
+      count: 3
+    - type: sound
+      sound: ENTITY_PLAYER_ATTACK_CRIT
+      volume: 1.2
+      pitch: 0.8
+    - type: particle
+      particle: CRIT
+      location: TARGET
+      count: 10
+
+enrage:
+  conditions:
+    - type: health_percent
+      max: 30
+  effects:
+    - type: particle
+      particle: ANGRY_VILLAGER
+      location: HEAD
+      count: 5
+    - type: heal
+      target: CASTER
+      amount: 50.0
+    - type: potion
+      target: CASTER
+      type: INCREASE_DAMAGE
+      duration: 200
+      amplifier: 1
+    - type: potion
+      target: CASTER
+      type: SPEED
+      duration: 200
+      amplifier: 1
+    - type: sound
+      sound: ENTITY_ZOMBIE_VILLAGER_CURE
+      volume: 1.5
+      pitch: 0.6
+
+warrior_death:
+  effects:
+    - type: explosion
+      target: CASTER
+      power: 1.0
+      damage: true
+      fire: false
+      break_blocks: false
+    - type: particle
+      particle: LARGE_SMOKE
+      location: CASTER
+      count: 50
+    - type: sound
+      sound: ENTITY_WITHER_DEATH
+      volume: 1.0
+      pitch: 0.5
+    - type: execute_command
+      command: "say &cA Zombie Warrior fell, but its explosion echoes!"
+      as_console: true

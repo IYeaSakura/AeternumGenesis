@@ -1,0 +1,44 @@
+# EasyMobs Example Spawn Rules
+# Place files in plugins/EasyMobs/spawns/ (supports subdirectories)
+
+blood_zombie_night:
+  action: REPLACE
+  type: blood_zombie
+  replace_types: ZOMBIE
+  chance: 0.3
+  priority: 20
+  worlds: world
+  conditions:
+    - night true
+    - outside true
+    - light_level "0-7"
+
+zombie_warrior_fullmoon:
+  action: ADD
+  type: zombie_warrior
+  chance: 0.01
+  priority: 30
+  level: 5
+  worlds: world
+  biomes: PLAINS,FOREST,SAVANNA
+  position_type: LAND
+  conditions:
+    - night true
+    - moon_phase full
+    - outside true
+    - y_above 60
+  density_limits:
+    max_per_radius:
+      template: zombie_warrior
+      amount: 1
+      radius: 1000
+
+deny_hostile_near_spawn:
+  action: DENY
+  deny_types: ZOMBIE,SKELETON,CREEPER,SPIDER,WITCH,ENDERMAN
+  chance: 1.0
+  priority: 100
+  worlds: world
+  conditions:
+    - y_above 50
+    - block_below GRASS_BLOCK
