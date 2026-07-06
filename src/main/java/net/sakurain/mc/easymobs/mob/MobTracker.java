@@ -393,4 +393,67 @@ public final class MobTracker {
     public static NamespacedKey getMobIdKey() {
         return MOB_ID_KEY;
     }
+
+    /**
+     * Counts the number of tracked custom mobs inside the given chunk.
+     *
+     * @param chunk the chunk
+     * @return number of custom mobs in the chunk
+     */
+    public int countMobsInChunk(org.bukkit.Chunk chunk) {
+        if (chunk == null) {
+            return 0;
+        }
+        int chunkX = chunk.getX();
+        int chunkZ = chunk.getZ();
+        org.bukkit.World world = chunk.getWorld();
+        int count = 0;
+        for (java.util.Map.Entry<UUID, CustomMobTemplate> entry : trackedMobs.entrySet()) {
+            org.bukkit.entity.Entity entity = org.bukkit.Bukkit.getEntity(entry.getKey());
+            if (!(entity instanceof LivingEntity living) || living.isDead()) {
+                continue;
+            }
+            if (!world.equals(entity.getWorld())) {
+                continue;
+            }
+            Location loc = entity.getLocation();
+            if ((loc.getBlockX() >> 4) == chunkX && (loc.getBlockZ() >> 4) == chunkZ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Counts the number of tracked custom mobs of the given template within a radius.
+     *
+     * @param center     center location
+     * @param radius     search radius in blocks
+     * @param templateId template id to match
+     * @return number of matching custom mobs nearby
+     */
+    public int countNearbyMobs(Location center, double radius, String templateId) {
+        if (center == null || center.getWorld() == null || radius <= 0 || templateId == null) {
+            return 0;
+        }
+        double radiusSq = radius * radius;
+        String targetId = templateId.toLowerCase();
+        int count = 0;
+        for (java.util.Map.Entry<UUID, CustomMobTemplate> entry : trackedMobs.entrySet()) {
+            if (!entry.getValue().getId().equals(targetId)) {
+                continue;
+            }
+            org.bukkit.entity.Entity entity = org.bukkit.Bukkit.getEntity(entry.getKey());
+            if (!(entity instanceof LivingEntity living) || living.isDead()) {
+                continue;
+            }
+            if (!center.getWorld().equals(entity.getWorld())) {
+                continue;
+            }
+            if (center.distanceSquared(entity.getLocation()) <= radiusSq) {
+                count++;
+            }
+        }
+        return count;
+    }
 }
