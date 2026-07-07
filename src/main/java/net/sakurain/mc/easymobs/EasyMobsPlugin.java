@@ -18,13 +18,16 @@ import net.sakurain.mc.easymobs.skill.SkillManager;
 import net.sakurain.mc.easymobs.spawn.SpawnManager;
 import net.sakurain.mc.easymobs.ai.AICombatListener;
 import net.sakurain.mc.easymobs.ai.CustomAIController;
+import net.sakurain.mc.easymobs.block.CustomBlockManager;
+import net.sakurain.mc.easymobs.listener.CustomBlockListener;
+import net.sakurain.mc.easymobs.listener.ProjectileHitListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EasyMobsPlugin extends JavaPlugin {
 
-    private static EasyMobsPlugin instance;
+    private static volatile EasyMobsPlugin instance;
 
     private ConfigManager configManager;
     private CustomItemManager itemManager;
@@ -32,6 +35,7 @@ public class EasyMobsPlugin extends JavaPlugin {
     private CustomMobManager mobManager;
     private SkillManager skillManager;
     private SpawnManager spawnManager;
+    private CustomBlockManager blockManager;
     private ItemEffectHandler itemEffectHandler;
     private EasyMobsAPIImpl api;
 
@@ -51,6 +55,9 @@ public class EasyMobsPlugin extends JavaPlugin {
         this.itemManager = new CustomItemManager(configManager.getItemConfigs());
         this.mobManager = new CustomMobManager(configManager.getMobConfigs());
         this.spawnManager = new SpawnManager(configManager.getSpawnConfigs());
+        this.blockManager = new CustomBlockManager(this);
+        this.blockManager.loadConfigs(configManager.getBlockConfigs());
+        this.blockManager.respawnAllHolograms();
 
         registerListeners();
         registerCommands();
@@ -72,6 +79,9 @@ public class EasyMobsPlugin extends JavaPlugin {
         if (api != null) {
             Bukkit.getServer().getServicesManager().unregister(api);
         }
+        if (blockManager != null) {
+            blockManager.saveStorage();
+        }
         instance = null;
     }
 
@@ -84,12 +94,19 @@ public class EasyMobsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ImmunityHandler(), this);
         getServer().getPluginManager().registerEvents(new AICombatListener(), this);
         getServer().getPluginManager().registerEvents(new MobEquipmentAttackHandler(), this);
+        getServer().getPluginManager().registerEvents(new CustomBlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new ProjectileHitListener(), this);
     }
 
     private void registerCommands() {
         EasyMobsCommand command = new EasyMobsCommand();
-        getCommand("ezmobs").setExecutor(command);
-        getCommand("ezmobs").setTabCompleter(command);
+        org.bukkit.command.PluginCommand cmd = getCommand("ezmobs");
+        if (cmd == null) {
+            getLogger().severe("Command 'ezmobs' not registered in plugin.yml");
+            return;
+        }
+        cmd.setExecutor(command);
+        cmd.setTabCompleter(command);
     }
 
     private void registerAPI() {
@@ -129,7 +146,15 @@ public class EasyMobsPlugin extends JavaPlugin {
         return itemEffectHandler;
     }
 
+    public CustomBlockManager getBlockManager() {
+        return blockManager;
+    }
+
     public EasyMobsAPI getAPI() {
         return api;
+    }
+
+    public net.sakurain.mc.easymobs.api.ItemAPI getItemAPI() {
+        return api.getItemAPI();
     }
 }

@@ -83,6 +83,9 @@ public class ItemAPIImpl implements ItemAPI {
         if (event.isCancelled()) {
             return false;
         }
+        if (player.getWorld() == null) {
+            return false;
+        }
         player.getInventory().addItem(event.getItem()).values().forEach(drop ->
                 player.getWorld().dropItemNaturally(player.getLocation(), drop));
         return true;
@@ -91,6 +94,9 @@ public class ItemAPIImpl implements ItemAPI {
     @Override
     @NotNull
     public Optional<ItemStack> dropItem(@NotNull Location location, @NotNull String templateId, int amount) {
+        if (location.getWorld() == null) {
+            return Optional.empty();
+        }
         Optional<ItemStack> opt = buildItem(templateId, amount);
         if (opt.isEmpty()) {
             return Optional.empty();

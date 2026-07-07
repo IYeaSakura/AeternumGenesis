@@ -1,6 +1,7 @@
 package net.sakurain.mc.easymobs.item;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
+import net.sakurain.mc.easymobs.util.TemplateIdUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -60,7 +62,12 @@ public final class CustomItemManager {
         }
     }
 
-    private CustomItemTemplate parseTemplate(String id, ConfigurationSection section) {
+    private CustomItemTemplate parseTemplate(String rawId, ConfigurationSection section) {
+        String id = TemplateIdUtil.normalize(rawId);
+        if (!TemplateIdUtil.isValid(id)) {
+            plugin.getLogger().warning("Invalid item template id (must be lowercase [a-z0-9._-] and <= 64 chars): " + rawId);
+            return null;
+        }
         Material material = parseMaterial(section.getString("material", "STONE"));
         if (material == null) {
             plugin.getLogger().warning("Unknown material for item " + id);
@@ -78,11 +85,12 @@ public final class CustomItemManager {
         List<CustomItemTemplate.ItemPassiveEffect> passiveEffects = parsePassiveEffects(section.getMapList("passive_effects"), id);
         List<CustomItemTemplate.ItemAttackEffect> attackEffects = parseAttackEffects(section.getMapList("attack_effects"), id);
         String setId = section.getString("set_id");
+        String blockId = section.getString("block");
         boolean unbreakable = section.getBoolean("unbreakable", false);
         List<String> itemFlags = section.getStringList("item_flags");
 
         return new CustomItemTemplate(id, material, name, lore, amount, customModelData, glow,
-                enchantments, hideEnchants, attributes, passiveEffects, attackEffects, setId, unbreakable, itemFlags);
+                enchantments, hideEnchants, attributes, passiveEffects, attackEffects, setId, blockId, unbreakable, itemFlags);
     }
 
     private Material parseMaterial(String value) {
@@ -103,21 +111,32 @@ public final class CustomItemManager {
             return 1;
         }
         String trimmed = value.trim();
+        int result;
         if (trimmed.contains("-")) {
             String[] parts = trimmed.split("-");
             try {
                 int min = Integer.parseInt(parts[0].trim());
                 int max = Integer.parseInt(parts[1].trim());
-                return min <= max ? ThreadLocalRandom.current().nextInt(min, max + 1) : min;
+                if (min > max) {
+                    result = min;
+                } else {
+                    long bound = (long) max + 1L;
+                    if (bound > Integer.MAX_VALUE) {
+                        bound = Integer.MAX_VALUE;
+                    }
+                    result = ThreadLocalRandom.current().nextInt(min, (int) bound);
+                }
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                 return 1;
             }
+        } else {
+            try {
+                result = Integer.parseInt(trimmed);
+            } catch (NumberFormatException e) {
+                return 1;
+            }
         }
-        try {
-            return Integer.parseInt(trimmed);
-        } catch (NumberFormatException e) {
-            return 1;
-        }
+        return Math.max(0, Math.min(result, 64));
     }
 
     @SuppressWarnings("deprecation")
@@ -242,11 +261,11 @@ public final class CustomItemManager {
     }
 
     public CustomItemTemplate getTemplate(String id) {
-        return templates.get(id);
+        return id != null ? templates.get(id.toLowerCase(Locale.ROOT)) : null;
     }
 
     public boolean hasTemplate(String id) {
-        return templates.containsKey(id);
+        return id != null && templates.containsKey(id.toLowerCase(Locale.ROOT));
     }
 
     public Set<String> getTemplateIds() {

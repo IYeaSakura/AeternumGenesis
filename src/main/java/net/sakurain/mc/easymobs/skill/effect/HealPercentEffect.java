@@ -13,6 +13,9 @@ public class HealPercentEffect extends AbstractSkillEffect {
     @Override
     public void execute(SkillContext context) {
         double percent = number("percent", 10.0);
+        if (!Double.isFinite(percent)) {
+            return;
+        }
         LivingEntity target = singleTarget(context);
         if (target == null || target.isDead()) {
             return;
@@ -20,6 +23,10 @@ public class HealPercentEffect extends AbstractSkillEffect {
         double maxHealth = target.getAttribute(Attribute.MAX_HEALTH) != null
                 ? target.getAttribute(Attribute.MAX_HEALTH).getValue()
                 : target.getHealth();
-        target.setHealth(Math.min(maxHealth, target.getHealth() + maxHealth * (percent / 100.0)));
+        double newHealth = target.getHealth() + maxHealth * (percent / 100.0);
+        if (!Double.isFinite(newHealth)) {
+            return;
+        }
+        target.setHealth(Math.min(maxHealth, newHealth));
     }
 }

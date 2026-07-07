@@ -15,14 +15,16 @@ import net.sakurain.mc.easymobs.mob.CustomMobTemplate;
 import net.sakurain.mc.easymobs.mob.MobTracker;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CustomAIController {
 
     private static CustomAIController instance;
 
     private final EasyMobsPlugin plugin;
-    private final Map<UUID, AggroTable> aggroTables = new HashMap<>();
-    private final Map<UUID, Long> switchCooldowns = new HashMap<>();
+    private final Map<UUID, AggroTable> aggroTables = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> switchCooldowns = new ConcurrentHashMap<>();
 
     private CustomAIController(@NotNull EasyMobsPlugin plugin) {
         this.plugin = plugin;
@@ -142,7 +144,7 @@ public class CustomAIController {
                         .max(Comparator.comparingDouble(e -> aggro != null ? aggro.getThreat(e.getUniqueId()) : 0))
                         .orElse(null);
             }
-            case "random" -> candidates.get(new Random().nextInt(candidates.size()));
+            case "random" -> candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
             case "first_sight" -> candidates.get(0);
             default -> candidates.stream()
                     .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(loc))).orElse(null);
@@ -185,6 +187,7 @@ public class CustomAIController {
                                @NotNull CustomMobTemplate.TargetingStrategy strategy,
                                @NotNull CustomMobTemplate template) {
         if (target == null || target.isDead()) return 0;
+        if (!mob.getWorld().equals(target.getWorld())) return 0;
         double score;
         double dist = mob.getLocation().distance(target.getLocation());
         String type = strategy.type().toLowerCase();
@@ -208,6 +211,10 @@ public class CustomAIController {
         if (behavior == null) return;
         LivingEntity target = mob.getTarget();
         if (target == null) return;
+        if (!mob.getWorld().equals(target.getWorld())) {
+            mob.setTarget(null);
+            return;
+        }
         double dist = mob.getLocation().distance(target.getLocation());
         if (dist > behavior.leashRange()) {
             mob.setTarget(null);

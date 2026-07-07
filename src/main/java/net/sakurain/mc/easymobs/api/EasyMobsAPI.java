@@ -37,5 +37,11 @@ public interface EasyMobsAPI {
     RegistryAPI getRegistryAPI();
 
     @NotNull
+    SetAPI getSetAPI();
+
+    @NotNull
+    BlockAPI getBlockAPI();
+
+    @NotNull
     String getVersion();
 }

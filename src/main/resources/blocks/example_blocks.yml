@@ -1,0 +1,13 @@
+# Example custom block templates.
+# Place a custom block by creating a custom item with `block: <block_id>` and right-clicking.
+
+example_custom_block:
+  material: NOTE_BLOCK
+  display_name: "&6Example Custom Block"
+  cancel_physics: true
+  cancel_piston: true
+  drops:
+    stone:
+      item: STONE
+      amount: "1"
+      chance: 100

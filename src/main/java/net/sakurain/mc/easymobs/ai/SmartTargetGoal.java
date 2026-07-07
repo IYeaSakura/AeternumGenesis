@@ -14,7 +14,7 @@ import java.util.EnumSet;
 public class SmartTargetGoal extends CustomAIController.BaseGoal {
 
     public static final GoalKey<Mob> KEY = GoalKey.of(Mob.class,
-            new NamespacedKey(EasyMobsPlugin.getInstance(), "smart_target"));
+            new NamespacedKey("easymobs", "smart_target"));
 
     public SmartTargetGoal(@NotNull Mob mob, @NotNull CustomMobTemplate template) {
         super(mob, template);

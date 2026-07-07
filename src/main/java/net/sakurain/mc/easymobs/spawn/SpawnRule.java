@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 /**
@@ -19,7 +21,7 @@ import java.util.logging.Level;
  */
 public final class SpawnRule {
 
-    private static final Random RANDOM = new Random();
+    private static final int MAX_LEVEL = 10_000;
 
     private final String id;
     private final Action action;
@@ -42,9 +44,9 @@ public final class SpawnRule {
                      PositionType positionType, Set<EntityType> replaceTypes, Set<EntityType> denyTypes,
                      Set<CreatureSpawnEvent.SpawnReason> spawnReasons, List<SpawnCondition> conditions,
                      DensityLimits densityLimits) {
-        this.id = id != null ? id.toLowerCase() : "";
+        this.id = id != null ? id.toLowerCase(Locale.ROOT) : "";
         this.action = action != null ? action : Action.ADD;
-        this.type = type != null ? type.toLowerCase() : "";
+        this.type = type != null ? type.toLowerCase(Locale.ROOT) : "";
         this.chance = chance;
         this.priority = priority;
         this.level = level;
@@ -91,13 +93,15 @@ public final class SpawnRule {
      */
     public int getRandomLevel() {
         if (level > 0) {
-            return level;
+            return Math.min(level, MAX_LEVEL);
         }
         if (levelRange != null && levelRange.length == 2) {
-            int min = Math.min(levelRange[0], levelRange[1]);
-            int max = Math.max(levelRange[0], levelRange[1]);
-            if (max >= 1) {
-                return min + RANDOM.nextInt(max - min + 1);
+            int min = Math.max(1, Math.min(levelRange[0], levelRange[1]));
+            int max = Math.max(1, Math.max(levelRange[0], levelRange[1]));
+            min = Math.min(min, MAX_LEVEL);
+            max = Math.min(max, MAX_LEVEL);
+            if (max >= min) {
+                return ThreadLocalRandom.current().nextInt(min, max + 1);
             }
         }
         return 1;
@@ -196,7 +200,7 @@ public final class SpawnRule {
             int amount = radiusSection.getInt("amount", 0);
             double radius = radiusSection.getDouble("radius", 0.0);
             if (template != null && !template.isEmpty() && amount > 0 && radius > 0) {
-                maxPerRadius = new MaxPerRadius(template.toLowerCase(), amount, radius);
+                maxPerRadius = new MaxPerRadius(template.toLowerCase(Locale.ROOT), amount, radius);
             }
         }
         return new DensityLimits(maxPerChunk, maxPerRadius);
@@ -239,7 +243,7 @@ public final class SpawnRule {
         }
         Set<String> set = new HashSet<>();
         for (String part : value.split(",")) {
-            String trimmed = part.trim().toUpperCase();
+            String trimmed = part.trim().toUpperCase(Locale.ROOT);
             if (!trimmed.isEmpty()) {
                 set.add(trimmed);
             }
@@ -253,7 +257,7 @@ public final class SpawnRule {
         }
         Set<EntityType> set = EnumSet.noneOf(EntityType.class);
         for (String part : value.split(",")) {
-            String trimmed = part.trim().toUpperCase();
+            String trimmed = part.trim().toUpperCase(Locale.ROOT);
             if (trimmed.isEmpty()) {
                 continue;
             }
@@ -272,7 +276,7 @@ public final class SpawnRule {
         }
         Set<CreatureSpawnEvent.SpawnReason> set = EnumSet.noneOf(CreatureSpawnEvent.SpawnReason.class);
         for (String part : value.split(",")) {
-            String trimmed = part.trim().toUpperCase();
+            String trimmed = part.trim().toUpperCase(Locale.ROOT);
             if (trimmed.isEmpty()) {
                 continue;
             }
@@ -290,7 +294,7 @@ public final class SpawnRule {
             return def;
         }
         try {
-            return Enum.valueOf(clazz, value.trim().toUpperCase());
+            return Enum.valueOf(clazz, value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             return def;
         }

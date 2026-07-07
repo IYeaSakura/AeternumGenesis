@@ -1,7 +1,10 @@
 package net.sakurain.mc.easymobs.skill.effect;
 
+import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.skill.SkillContext;
 import org.bukkit.Bukkit;
+
+import java.util.List;
 
 public class ExecuteCommandEffect extends AbstractSkillEffect {
 
@@ -15,6 +18,26 @@ public class ExecuteCommandEffect extends AbstractSkillEffect {
         if (command.isEmpty()) {
             return;
         }
+
+        EasyMobsPlugin plugin = EasyMobsPlugin.getInstance();
+        if (plugin == null || !plugin.getConfig().getBoolean("skills.allow-execute-command", false)) {
+            return;
+        }
+
+        List<String> allowed = plugin.getConfig().getStringList("skills.allowed-execute-commands");
+        String base = command.trim();
+        if (base.startsWith("/")) {
+            base = base.substring(1);
+        }
+        int space = base.indexOf(' ');
+        if (space > 0) {
+            base = base.substring(0, space);
+        }
+        if (!allowed.isEmpty() && !allowed.contains(base)) {
+            plugin.getLogger().warning("Blocked execute_command skill: '" + base + "' is not in skills.allowed-execute-commands");
+            return;
+        }
+
         if (!command.startsWith("/")) {
             command = "/" + command;
         }

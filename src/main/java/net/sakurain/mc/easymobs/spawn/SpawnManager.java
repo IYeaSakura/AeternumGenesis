@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.spawn;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.util.SchedulerUtil;
+import net.sakurain.mc.easymobs.util.TemplateIdUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -75,8 +76,13 @@ public final class SpawnManager {
             if (section == null) {
                 continue;
             }
+            String id = TemplateIdUtil.normalize(key);
+            if (!TemplateIdUtil.isValid(id)) {
+                plugin.getLogger().warning("Invalid spawn rule id (must be lowercase [a-z0-9._-] and <= 64 chars): " + key);
+                continue;
+            }
             try {
-                SpawnRule rule = SpawnRule.fromConfig(key.toLowerCase(), section);
+                SpawnRule rule = SpawnRule.fromConfig(id, section);
                 if (rule != null) {
                     result.add(rule);
                 }

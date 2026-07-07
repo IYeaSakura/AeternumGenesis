@@ -25,6 +25,8 @@ server/
 plugins/
 .doc/
 test/
+terraria-mobs/
 
 # Local environment
 .env
+node_modules/

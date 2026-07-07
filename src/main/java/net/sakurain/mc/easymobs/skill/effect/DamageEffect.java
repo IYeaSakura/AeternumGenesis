@@ -12,6 +12,9 @@ public class DamageEffect extends AbstractSkillEffect {
     @Override
     public void execute(SkillContext context) {
         double amount = number("amount", 1.0);
+        if (!Double.isFinite(amount) || amount < 0) {
+            return;
+        }
         LivingEntity target = singleTarget(context);
         if (target == null || target.isDead()) {
             return;

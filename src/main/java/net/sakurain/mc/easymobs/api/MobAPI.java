@@ -55,6 +55,8 @@ public interface MobAPI {
     @NotNull
     Collection<String> getAllTemplateIds();
 
+    boolean hasTemplate(@NotNull String templateId);
+
     int countNearbyMobs(@NotNull Location location, double radius, @NotNull String templateId);
 
     int countMobsInChunk(@NotNull Chunk chunk);

@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.item.set;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.item.CustomItemTemplate;
+import net.sakurain.mc.easymobs.util.TemplateIdUtil;
 import net.sakurain.mc.easymobs.item.ItemEffectParser;
 import net.sakurain.mc.easymobs.item.ItemIdentifier;
 import org.bukkit.NamespacedKey;
@@ -60,7 +61,7 @@ public final class ItemSetManager {
             }
             try {
                 ConfigurationSection section = config.getConfigurationSection(key);
-                ItemSetTemplate set = parseSet(key, section);
+                ItemSetTemplate set = parseTemplate(key, section);
                 if (set != null) {
                     registerSet(set);
                 }
@@ -71,7 +72,11 @@ public final class ItemSetManager {
     }
 
     @SuppressWarnings("unchecked")
-    private ItemSetTemplate parseSet(String id, ConfigurationSection section) {
+    public static ItemSetTemplate parseTemplate(String rawId, ConfigurationSection section) {
+        String id = TemplateIdUtil.normalize(rawId);
+        if (!TemplateIdUtil.isValid(id)) {
+            throw new IllegalArgumentException("Invalid set template id (must be lowercase [a-z0-9._-] and <= 64 chars): " + rawId);
+        }
         String name = section.getString("name", id);
         List<String> lore = section.getStringList("lore");
         List<String> itemIds = section.getStringList("item_ids");
@@ -126,8 +131,31 @@ public final class ItemSetManager {
      *
      * @param set the set to register
      */
-    public void registerSet(ItemSetTemplate set) {
-        sets.put(set.getId(), set);
+    public boolean registerSet(ItemSetTemplate set) {
+        if (set == null) {
+            return false;
+        }
+        String id = TemplateIdUtil.normalize(set.getId());
+        if (!TemplateIdUtil.isValid(id)) {
+            plugin.getLogger().warning("Invalid set template id: " + set.getId());
+            return false;
+        }
+        sets.put(id, set);
+        return true;
+    }
+
+    public boolean unregisterSet(String id) {
+        return id != null && sets.remove(id.toLowerCase(java.util.Locale.ROOT)) != null;
+    }
+
+    public void clearNotified(UUID uuid) {
+        if (uuid != null) {
+            notifiedBonuses.remove(uuid);
+        }
+    }
+
+    public Set<String> getSetIds() {
+        return Set.copyOf(sets.keySet());
     }
 
     /**

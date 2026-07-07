@@ -59,6 +59,9 @@ public class MobAPIImpl implements MobAPI {
     @Override
     @NotNull
     public Optional<LivingEntity> spawnMob(@NotNull String templateId, @NotNull Location location, int level) {
+        if (location.getWorld() == null) {
+            return Optional.empty();
+        }
         CustomMobManager manager = plugin.getMobManager();
         CustomMobTemplate template = manager.getTemplate(templateId);
         if (template == null) {
@@ -111,8 +114,11 @@ public class MobAPIImpl implements MobAPI {
     @Override
     @NotNull
     public Collection<LivingEntity> getNearbyMobs(@NotNull Location location, double radius) {
+        if (location.getWorld() == null) {
+            return List.of();
+        }
         return getAllActiveMobs().stream()
-                .filter(e -> e.getWorld().equals(location.getWorld())
+                .filter(e -> location.getWorld().equals(e.getWorld())
                         && e.getLocation().distanceSquared(location) <= radius * radius)
                 .toList();
     }
@@ -143,6 +149,11 @@ public class MobAPIImpl implements MobAPI {
     @NotNull
     public Collection<String> getAllTemplateIds() {
         return plugin.getMobManager().getTemplateIds();
+    }
+
+    @Override
+    public boolean hasTemplate(@NotNull String templateId) {
+        return plugin.getMobManager().hasTemplate(templateId);
     }
 
     @Override

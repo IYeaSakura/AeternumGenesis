@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.mob;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.skill.SkillBinding;
+import net.sakurain.mc.easymobs.util.TemplateIdUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -60,9 +61,14 @@ public final class CustomMobManager {
         }
     }
 
-    private void loadTemplate(String fileName, String id, ConfigurationSection section) {
+    private void loadTemplate(String fileName, String rawId, ConfigurationSection section) {
+        String id = TemplateIdUtil.normalize(rawId);
+        if (!TemplateIdUtil.isValid(id)) {
+            plugin.getLogger().warning("Invalid mob template id (must be lowercase [a-z0-9._-] and <= 64 chars): " + rawId);
+            return;
+        }
         try {
-            CustomMobTemplate template = CustomMobTemplate.fromConfig(id.toLowerCase(), section);
+            CustomMobTemplate template = CustomMobTemplate.fromConfig(id, section);
             templates.put(template.getId(), template);
 
             // Register skill bindings with the global skill manager.
@@ -88,11 +94,11 @@ public final class CustomMobManager {
     }
 
     public CustomMobTemplate getTemplate(String id) {
-        return id != null ? templates.get(id.toLowerCase()) : null;
+        return id != null ? templates.get(id.toLowerCase(java.util.Locale.ROOT)) : null;
     }
 
     public boolean hasTemplate(String id) {
-        return id != null && templates.containsKey(id.toLowerCase());
+        return id != null && templates.containsKey(id.toLowerCase(java.util.Locale.ROOT));
     }
 
     public Set<String> getTemplateIds() {
@@ -107,11 +113,16 @@ public final class CustomMobManager {
         if (id == null || template == null) {
             return false;
         }
-        templates.put(id.toLowerCase(), template);
+        String normalized = TemplateIdUtil.normalize(id);
+        if (!TemplateIdUtil.isValid(normalized)) {
+            plugin.getLogger().warning("Invalid mob template id: " + id);
+            return false;
+        }
+        templates.put(normalized, template);
         return true;
     }
 
     public boolean removeTemplate(String id) {
-        return id != null && templates.remove(id.toLowerCase()) != null;
+        return id != null && templates.remove(id.toLowerCase(java.util.Locale.ROOT)) != null;
     }
 }

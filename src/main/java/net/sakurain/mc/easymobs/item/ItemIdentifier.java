@@ -12,8 +12,8 @@ import org.bukkit.persistence.PersistentDataType;
  */
 public final class ItemIdentifier {
 
-    private static final NamespacedKey ITEM_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_item_id");
-    private static final NamespacedKey SET_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_set_id");
+    private static final NamespacedKey ITEM_ID_KEY = new NamespacedKey("easymobs", "ezmobs_item_id");
+    private static final NamespacedKey SET_ID_KEY = new NamespacedKey("easymobs", "ezmobs_set_id");
 
     private ItemIdentifier() {
     }

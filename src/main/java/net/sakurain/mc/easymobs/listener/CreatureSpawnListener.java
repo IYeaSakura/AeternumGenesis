@@ -133,6 +133,10 @@ public class CreatureSpawnListener implements Listener {
         if (limits == null) {
             return true;
         }
+        World world = location.getWorld();
+        if (world == null || !world.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+            return true;
+        }
         if (limits.maxPerChunk() > 0) {
             int count = MobTracker.getInstance().countMobsInChunk(location.getChunk());
             if (count >= limits.maxPerChunk()) {

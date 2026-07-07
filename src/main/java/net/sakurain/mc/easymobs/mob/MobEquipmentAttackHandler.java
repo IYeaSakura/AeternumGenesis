@@ -103,7 +103,7 @@ public final class MobEquipmentAttackHandler implements Listener {
                 if (instance == null) {
                     break;
                 }
-                NamespacedKey key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+                NamespacedKey key = new NamespacedKey("easymobs",
                         "ezmobs_mob_attack_" + entry.getAttribute().getKey().getKey() + "_" + entry.getAttributeSlot());
                 instance.getModifiers().stream()
                         .filter(m -> m.getKey().equals(key))

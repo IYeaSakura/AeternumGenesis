@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -221,6 +222,13 @@ public final class ItemEffectHandler implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (plugin.getItemSetManager() != null) {
+            plugin.getItemSetManager().clearNotified(event.getPlayer().getUniqueId());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
@@ -291,7 +299,7 @@ public final class ItemEffectHandler implements Listener {
                 if (instance == null) {
                     break;
                 }
-                NamespacedKey key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+                NamespacedKey key = new NamespacedKey("easymobs",
                         "ezmobs_attack_" + entry.getAttribute().getKey().getKey() + "_" + entry.getAttributeSlot());
                 instance.getModifiers().stream()
                         .filter(m -> m.getKey().equals(key))

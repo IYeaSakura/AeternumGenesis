@@ -15,7 +15,7 @@ import java.util.EnumSet;
 public class CircleTargetGoal extends CustomAIController.BaseGoal {
 
     public static final GoalKey<Mob> KEY = GoalKey.of(Mob.class,
-            new NamespacedKey(EasyMobsPlugin.getInstance(), "circle_target"));
+            new NamespacedKey("easymobs", "circle_target"));
 
     private final double radius;
     private double angle = 0;

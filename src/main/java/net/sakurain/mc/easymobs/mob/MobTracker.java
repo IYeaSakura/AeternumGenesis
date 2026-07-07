@@ -35,7 +35,7 @@ public final class MobTracker {
 
     private static MobTracker instance;
 
-    private static final NamespacedKey MOB_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_mob_id");
+    private static final NamespacedKey MOB_ID_KEY = new NamespacedKey("easymobs", "ezmobs_mob_id");
     private static final long BOSSBAR_UPDATE_INTERVAL = 5L;
     private static final long AI_UPDATE_INTERVAL = 10L;
 

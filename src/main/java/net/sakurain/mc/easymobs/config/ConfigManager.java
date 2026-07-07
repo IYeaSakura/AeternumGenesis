@@ -21,6 +21,7 @@ public class ConfigManager {
     private final Map<String, YamlConfiguration> skillConfigs = new HashMap<>();
     private final Map<String, YamlConfiguration> spawnConfigs = new HashMap<>();
     private final Map<String, YamlConfiguration> setConfigs = new HashMap<>();
+    private final Map<String, YamlConfiguration> blockConfigs = new HashMap<>();
 
     public ConfigManager(EasyMobsPlugin plugin) {
         this.plugin = plugin;
@@ -32,6 +33,7 @@ public class ConfigManager {
         loadConfigs("skills", skillConfigs);
         loadConfigs("spawns", spawnConfigs);
         loadConfigs("sets", setConfigs);
+        loadConfigs("blocks", blockConfigs);
     }
 
     public void reloadAll() {
@@ -40,6 +42,7 @@ public class ConfigManager {
         skillConfigs.clear();
         spawnConfigs.clear();
         setConfigs.clear();
+        blockConfigs.clear();
         loadAll();
     }
 
@@ -57,15 +60,19 @@ public class ConfigManager {
             return;
         }
         for (File file : files) {
+            String name = file.getName();
+            if (name.contains("..") || name.contains(File.separator)) {
+                continue;
+            }
             if (file.isDirectory()) {
-                loadConfigsRecursive(file, pathPrefix + "/" + file.getName(), target);
-            } else if (file.getName().endsWith(".yml")) {
+                loadConfigsRecursive(file, pathPrefix + "/" + name, target);
+            } else if (name.endsWith(".yml")) {
                 try {
                     YamlConfiguration config = new YamlConfiguration();
                     config.load(file);
-                    target.put(pathPrefix + "/" + file.getName(), config);
+                    target.put(pathPrefix + "/" + name, config);
                 } catch (IOException | InvalidConfigurationException e) {
-                    plugin.getLogger().log(Level.WARNING, "Failed to load " + pathPrefix + "/" + file.getName(), e);
+                    plugin.getLogger().log(Level.WARNING, "Failed to load " + pathPrefix + "/" + name, e);
                 }
             }
         }
@@ -89,5 +96,9 @@ public class ConfigManager {
 
     public Map<String, YamlConfiguration> getSetConfigs() {
         return Map.copyOf(setConfigs);
+    }
+
+    public Map<String, YamlConfiguration> getBlockConfigs() {
+        return Map.copyOf(blockConfigs);
     }
 }

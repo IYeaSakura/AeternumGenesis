@@ -16,7 +16,7 @@ import java.util.EnumSet;
 public class SmartAttackGoal extends CustomAIController.BaseGoal {
 
     public static final GoalKey<Mob> KEY = GoalKey.of(Mob.class,
-            new NamespacedKey(EasyMobsPlugin.getInstance(), "smart_attack"));
+            new NamespacedKey("easymobs", "smart_attack"));
 
     private int attackCooldown = 0;
 

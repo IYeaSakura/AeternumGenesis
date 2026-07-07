@@ -13,6 +13,9 @@ public class HealEffect extends AbstractSkillEffect {
     @Override
     public void execute(SkillContext context) {
         double amount = number("amount", 1.0);
+        if (!Double.isFinite(amount)) {
+            return;
+        }
         LivingEntity target = singleTarget(context);
         if (target == null || target.isDead()) {
             return;
@@ -20,6 +23,10 @@ public class HealEffect extends AbstractSkillEffect {
         double maxHealth = target.getAttribute(Attribute.MAX_HEALTH) != null
                 ? target.getAttribute(Attribute.MAX_HEALTH).getValue()
                 : target.getHealth();
-        target.setHealth(Math.min(maxHealth, target.getHealth() + amount));
+        double newHealth = target.getHealth() + amount;
+        if (!Double.isFinite(newHealth)) {
+            return;
+        }
+        target.setHealth(Math.min(maxHealth, newHealth));
     }
 }

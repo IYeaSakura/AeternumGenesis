@@ -42,8 +42,8 @@ public class NaturalSpawnTask implements Runnable {
 
         int minDistance = plugin.getConfig().getInt("spawning.min-player-distance", 24);
         int maxDistance = plugin.getConfig().getInt("spawning.max-player-distance", 64);
-        int maxAttempts = plugin.getConfig().getInt("spawning.max-spawn-attempts", 10);
-        int maxPerCycle = plugin.getConfig().getInt("spawning.max-spawns-per-cycle", 3);
+        int maxAttempts = Math.max(1, Math.min(plugin.getConfig().getInt("spawning.max-spawn-attempts", 10), 50));
+        int maxPerCycle = Math.max(0, Math.min(plugin.getConfig().getInt("spawning.max-spawns-per-cycle", 3), 50));
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!isSurvivalOrAdventure(player)) {
@@ -113,6 +113,11 @@ public class NaturalSpawnTask implements Runnable {
             double distance = minDistance + random.nextDouble() * (maxDistance - minDistance);
             int x = center.getBlockX() + (int) (Math.cos(angle) * distance);
             int z = center.getBlockZ() + (int) (Math.sin(angle) * distance);
+            int chunkX = x >> 4;
+            int chunkZ = z >> 4;
+            if (!world.isChunkLoaded(chunkX, chunkZ)) {
+                continue;
+            }
 
             int surfaceY = world.getHighestBlockYAt(x, z);
             Location loc = switch (type) {

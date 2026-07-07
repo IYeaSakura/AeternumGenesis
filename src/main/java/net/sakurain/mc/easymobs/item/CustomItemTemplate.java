@@ -28,6 +28,7 @@ public final class CustomItemTemplate {
     private final List<ItemPassiveEffect> passiveEffects;
     private final List<ItemAttackEffect> attackEffects;
     private final String setId;
+    private final String blockId;
     private final boolean unbreakable;
     private final List<String> itemFlags;
 
@@ -35,7 +36,7 @@ public final class CustomItemTemplate {
                               Integer customModelData, boolean glow, Map<Enchantment, Integer> enchantments,
                               boolean hideEnchants, List<ItemAttribute> attributes,
                               List<ItemPassiveEffect> passiveEffects, List<ItemAttackEffect> attackEffects,
-                              String setId, boolean unbreakable, List<String> itemFlags) {
+                              String setId, String blockId, boolean unbreakable, List<String> itemFlags) {
         this.id = id;
         this.material = material;
         this.name = name;
@@ -49,6 +50,7 @@ public final class CustomItemTemplate {
         this.passiveEffects = passiveEffects == null ? List.of() : List.copyOf(passiveEffects);
         this.attackEffects = attackEffects == null ? List.of() : List.copyOf(attackEffects);
         this.setId = setId;
+        this.blockId = blockId;
         this.unbreakable = unbreakable;
         this.itemFlags = itemFlags == null ? List.of() : List.copyOf(itemFlags);
     }
@@ -103,6 +105,10 @@ public final class CustomItemTemplate {
 
     public String getSetId() {
         return setId;
+    }
+
+    public String getBlockId() {
+        return blockId;
     }
 
     public boolean isUnbreakable() {

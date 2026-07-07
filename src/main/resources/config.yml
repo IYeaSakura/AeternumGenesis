@@ -32,5 +32,14 @@ performance:
   # BossBar update interval in ticks
   bossbar-update-interval: 5
 
+# Skill effect security
+skills:
+  # The execute_command skill effect can run arbitrary server commands.
+  # Enable ONLY if you trust every skill config and expansion.
+  allow-execute-command: false
+  # When non-empty, only commands in this list may be used by execute_command.
+  # Names should NOT include the leading slash.
+  allowed-execute-commands: []
+
 # Debug mode (logs extra information)
 debug: false

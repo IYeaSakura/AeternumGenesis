@@ -13,7 +13,8 @@ import org.bukkit.persistence.PersistentDataType;
  */
 public final class LevelSystem {
 
-    private static final NamespacedKey MOB_LEVEL_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_level");
+    private static final NamespacedKey MOB_LEVEL_KEY = new NamespacedKey("easymobs", "ezmobs_level");
+    private static final int MAX_LEVEL = 10_000;
 
     private LevelSystem() {
     }
@@ -29,6 +30,7 @@ public final class LevelSystem {
         if (entity == null || level <= 0) {
             return;
         }
+        level = Math.min(level, MAX_LEVEL);
         setMobLevel(entity, level);
 
         if (template != null && template.getDisplayName() != null && template.getDisplayName().contains("<level>")) {
@@ -44,6 +46,9 @@ public final class LevelSystem {
                     ? template.getMaxHealth()
                     : maxHealth.getBaseValue();
             double scaled = base * multiplier;
+            if (!Double.isFinite(scaled) || scaled <= 0) {
+                return;
+            }
             maxHealth.setBaseValue(scaled);
             entity.setHealth(scaled);
         }

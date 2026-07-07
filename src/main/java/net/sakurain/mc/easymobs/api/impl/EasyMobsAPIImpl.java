@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.api.impl;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.api.*;
+import net.sakurain.mc.easymobs.api.BlockAPI;
 import org.jetbrains.annotations.NotNull;
 
 public class EasyMobsAPIImpl implements EasyMobsAPI {
@@ -12,6 +13,8 @@ public class EasyMobsAPIImpl implements EasyMobsAPI {
     private final SpawnAPI spawnAPI;
     private final SkillAPI skillAPI;
     private final RegistryAPI registryAPI;
+    private final SetAPI setAPI;
+    private final BlockAPI blockAPI;
 
     public EasyMobsAPIImpl(@NotNull EasyMobsPlugin plugin) {
         this.plugin = plugin;
@@ -20,6 +23,8 @@ public class EasyMobsAPIImpl implements EasyMobsAPI {
         this.spawnAPI = new SpawnAPIImpl(plugin);
         this.skillAPI = new SkillAPIImpl(plugin);
         this.registryAPI = new RegistryAPIImpl(plugin);
+        this.setAPI = new SetAPIImpl(plugin);
+        this.blockAPI = new BlockAPIImpl(plugin);
     }
 
     @Override
@@ -50,6 +55,18 @@ public class EasyMobsAPIImpl implements EasyMobsAPI {
     @NotNull
     public RegistryAPI getRegistryAPI() {
         return registryAPI;
+    }
+
+    @Override
+    @NotNull
+    public SetAPI getSetAPI() {
+        return setAPI;
+    }
+
+    @Override
+    @NotNull
+    public BlockAPI getBlockAPI() {
+        return blockAPI;
     }
 
     @Override

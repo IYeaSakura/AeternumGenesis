@@ -26,8 +26,8 @@ import java.util.Map;
 @SuppressWarnings("deprecation")
 public final class ItemBuilder {
 
-    private static final NamespacedKey ITEM_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_item_id");
-    private static final NamespacedKey SET_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_set_id");
+    private static final NamespacedKey ITEM_ID_KEY = new NamespacedKey("easymobs", "ezmobs_item_id");
+    private static final NamespacedKey SET_ID_KEY = new NamespacedKey("easymobs", "ezmobs_set_id");
 
     private ItemBuilder() {
     }
@@ -54,12 +54,12 @@ public final class ItemBuilder {
             double delta = attr.getAmount() - getPlayerBase(attribute);
             NamespacedKey key = getVanillaBaseModifierKey(attribute, slot);
             if (key == null) {
-                key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+                key = new NamespacedKey("easymobs",
                         template.getId() + "_" + attribute.getKey().getKey());
             }
             return new AttributeModifier(key, delta, Operation.ADD_NUMBER, toSlotGroup(slot));
         }
-        NamespacedKey key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+        NamespacedKey key = new NamespacedKey("easymobs",
                 template.getId() + "_" + attribute.getKey().getKey());
         return new AttributeModifier(key, attr.getAmount(), attr.getOperation(), toSlotGroup(slot));
     }

@@ -40,7 +40,7 @@ import java.util.Map;
 @SuppressWarnings("deprecation")
 public final class MobSpawner {
 
-    private static final NamespacedKey MOB_ID_KEY = new NamespacedKey(EasyMobsPlugin.getInstance(), "ezmobs_mob_id");
+    private static final NamespacedKey MOB_ID_KEY = new NamespacedKey("easymobs", "ezmobs_mob_id");
 
     private MobSpawner() {
     }
@@ -126,7 +126,7 @@ public final class MobSpawner {
             if (mobAttribute.operation() == AttributeModifier.Operation.ADD_NUMBER) {
                 instance.setBaseValue(instance.getBaseValue() + mobAttribute.amount());
             } else {
-                NamespacedKey key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+                NamespacedKey key = new NamespacedKey("easymobs",
                         "ezmobs_attr_" + mobAttribute.attribute().getKey().getKey());
                 instance.addModifier(new AttributeModifier(key, mobAttribute.amount(), mobAttribute.operation()));
             }

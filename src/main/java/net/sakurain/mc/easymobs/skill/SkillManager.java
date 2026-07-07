@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.skill;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.skill.condition.*;
+import net.sakurain.mc.easymobs.util.TemplateIdUtil;
 import net.sakurain.mc.easymobs.skill.effect.*;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -55,6 +56,7 @@ public class SkillManager {
         registerEffect("drop_item", DropItemEffect::new);
         registerEffect("execute_command", ExecuteCommandEffect::new);
         registerEffect("delay", DelayEffect::new);
+        registerEffect("projectile", ProjectileEffect::new);
     }
 
     private void registerDefaultConditions() {
@@ -90,9 +92,14 @@ public class SkillManager {
             if (config.contains("id")) {
                 id = config.getString("id", id);
             }
+            id = TemplateIdUtil.normalize(id);
+            if (!TemplateIdUtil.isValid(id)) {
+                plugin.getLogger().warning("Invalid skill template id (must be lowercase [a-z0-9._-] and <= 64 chars): " + fileName);
+                continue;
+            }
             try {
                 SkillTemplate template = SkillTemplate.fromConfig(id, config);
-                templates.put(id.toLowerCase(), template);
+                templates.put(id, template);
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to load skill template " + fileName + ": " + e.getMessage());
             }
@@ -198,11 +205,11 @@ public class SkillManager {
     }
 
     public SkillTemplate getTemplate(String id) {
-        return id != null ? templates.get(id.toLowerCase()) : null;
+        return id != null ? templates.get(id.toLowerCase(java.util.Locale.ROOT)) : null;
     }
 
     public boolean hasSkill(String id) {
-        return id != null && templates.containsKey(id.toLowerCase());
+        return id != null && templates.containsKey(id.toLowerCase(java.util.Locale.ROOT));
     }
 
     public Set<String> getAllSkillIds() {
@@ -217,7 +224,12 @@ public class SkillManager {
         if (id == null || template == null) {
             return false;
         }
-        templates.put(id.toLowerCase(), template);
+        String normalized = TemplateIdUtil.normalize(id);
+        if (!TemplateIdUtil.isValid(normalized)) {
+            plugin.getLogger().warning("Invalid skill template id: " + id);
+            return false;
+        }
+        templates.put(normalized, template);
         return true;
     }
 

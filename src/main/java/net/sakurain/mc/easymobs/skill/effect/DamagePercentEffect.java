@@ -13,6 +13,9 @@ public class DamagePercentEffect extends AbstractSkillEffect {
     @Override
     public void execute(SkillContext context) {
         double percent = number("percent", 10.0);
+        if (!Double.isFinite(percent)) {
+            return;
+        }
         LivingEntity target = singleTarget(context);
         if (target == null || target.isDead()) {
             return;
@@ -21,6 +24,9 @@ public class DamagePercentEffect extends AbstractSkillEffect {
                 ? target.getAttribute(Attribute.MAX_HEALTH).getValue()
                 : target.getHealth();
         double amount = maxHealth * (percent / 100.0);
+        if (!Double.isFinite(amount) || amount < 0) {
+            return;
+        }
         if (context.getCaster() != null) {
             target.damage(amount, context.getCaster());
         } else {

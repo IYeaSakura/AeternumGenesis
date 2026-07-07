@@ -29,7 +29,7 @@ public class ParticleEffect extends AbstractSkillEffect {
             return;
         }
 
-        int count = integer("count", 1);
+        int count = Math.max(0, Math.min(integer("count", 1), 1000));
         double offsetX = number("offset_x", 0.0);
         double offsetY = number("offset_y", 0.0);
         double offsetZ = number("offset_z", 0.0);
@@ -47,13 +47,17 @@ public class ParticleEffect extends AbstractSkillEffect {
     }
 
     private Particle parseParticle(String name) {
-        if (name.equals("redstone")) {
-            Particle dust = Registry.PARTICLE_TYPE.get(NamespacedKey.minecraft("dust"));
-            if (dust != null) {
-                return dust;
+        try {
+            if (name.equals("redstone")) {
+                Particle dust = Registry.PARTICLE_TYPE.get(NamespacedKey.minecraft("dust"));
+                if (dust != null) {
+                    return dust;
+                }
             }
+            return Registry.PARTICLE_TYPE.get(NamespacedKey.minecraft(name));
+        } catch (IllegalArgumentException e) {
+            return null;
         }
-        return Registry.PARTICLE_TYPE.get(NamespacedKey.minecraft(name));
     }
 
     private Color parseColor(String hex) {

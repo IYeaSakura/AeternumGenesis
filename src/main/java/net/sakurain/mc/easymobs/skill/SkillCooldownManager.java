@@ -58,7 +58,7 @@ public final class SkillCooldownManager {
     }
 
     private static NamespacedKey key(String skillId) {
-        return new NamespacedKey(EasyMobsPlugin.getInstance(), KEY_PREFIX + sanitize(skillId));
+        return new NamespacedKey("easymobs", KEY_PREFIX + sanitize(skillId));
     }
 
     private static String sanitize(String skillId) {

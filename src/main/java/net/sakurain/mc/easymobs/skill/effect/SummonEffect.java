@@ -16,8 +16,8 @@ public class SummonEffect extends AbstractSkillEffect {
     @Override
     public void execute(SkillContext context) {
         String typeName = string("entity_type", "").toLowerCase();
-        int amount = integer("amount", 1);
-        if (typeName.isEmpty()) {
+        int amount = Math.max(0, Math.min(integer("amount", 1), 100));
+        if (typeName.isEmpty() || amount <= 0) {
             return;
         }
         EntityType entityType = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(typeName));

@@ -19,7 +19,7 @@ import java.util.EnumSet;
 public class BreakDoorGoal extends CustomAIController.BaseGoal {
 
     public static final GoalKey<Mob> KEY = GoalKey.of(Mob.class,
-            new NamespacedKey(EasyMobsPlugin.getInstance(), "break_door"));
+            new NamespacedKey("easymobs", "break_door"));
 
     private static final int BREAK_TIME = 120;
 
