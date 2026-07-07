@@ -74,7 +74,7 @@ public final class MobTracker {
         List<BukkitTask> tasks = new ArrayList<>();
         startParticleTasks(uuid, template, tasks);
         startSoundTask(uuid, template, tasks);
-        startBossBarTask(uuid, template, tasks);
+        startBossBarTask(uuid, template, tasks, true);
         startAITask(uuid, template, tasks);
         activeTasks.put(uuid, tasks);
     }
@@ -180,13 +180,20 @@ public final class MobTracker {
     }
 
     private void startBossBarTask(UUID uuid, CustomMobTemplate template, List<BukkitTask> tasks) {
+        startBossBarTask(uuid, template, tasks, false);
+    }
+
+    private void startBossBarTask(UUID uuid, CustomMobTemplate template, List<BukkitTask> tasks, boolean allowLateRegistration) {
         CustomMobTemplate.BossBarConfig config = template.getBossbar();
         if (!config.enabled()) {
             return;
         }
         BossBar bossBar = activeBossBars.get(uuid);
         if (bossBar == null) {
-            return;
+            if (allowLateRegistration) {
+                return;
+            }
+            throw new IllegalStateException("BossBar was not registered before track started for " + uuid);
         }
         tasks.add(SchedulerUtil.runTimer(BOSSBAR_UPDATE_INTERVAL, BOSSBAR_UPDATE_INTERVAL, () -> {
             LivingEntity entity = getLivingEntity(uuid);
@@ -195,6 +202,20 @@ public final class MobTracker {
             }
             updateBossBar(bossBar, entity, config);
         }));
+    }
+
+    /**
+     * Starts the bossbar update task for a mob whose bossbar was registered after {@link #track(LivingEntity, CustomMobTemplate)}.
+     *
+     * @param uuid the mob uuid
+     */
+    public void startBossBarTask(UUID uuid) {
+        CustomMobTemplate template = trackedMobs.get(uuid);
+        if (template == null) {
+            return;
+        }
+        List<BukkitTask> tasks = activeTasks.computeIfAbsent(uuid, k -> new ArrayList<>());
+        startBossBarTask(uuid, template, tasks, true);
     }
 
     private void updateBossBar(BossBar bossBar, LivingEntity entity, CustomMobTemplate.BossBarConfig config) {

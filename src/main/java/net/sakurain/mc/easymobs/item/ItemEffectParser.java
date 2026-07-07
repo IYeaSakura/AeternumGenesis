@@ -149,9 +149,23 @@ public final class ItemEffectParser {
         if (value == null) {
             return null;
         }
-        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
+        String normalized = value.toLowerCase();
+        NamespacedKey key = NamespacedKey.minecraft(POTION_ALIASES.getOrDefault(normalized, normalized));
         return Registry.EFFECT.get(key);
     }
+
+    private static final Map<String, String> POTION_ALIASES = Map.ofEntries(
+            Map.entry("damage_resistance", "resistance"),
+            Map.entry("increase_damage", "strength"),
+            Map.entry("fast_digging", "haste"),
+            Map.entry("harm", "instant_damage"),
+            Map.entry("heal", "instant_health"),
+            Map.entry("jump", "jump_boost"),
+            Map.entry("confusion", "nausea"),
+            Map.entry("slow", "slowness"),
+            Map.entry("slow_digging", "mining_fatigue"),
+            Map.entry("water_breathing", "water_breathing")
+    );
 
     public static org.bukkit.Particle parseParticle(String value) {
         if (value == null) {

@@ -4,7 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,6 +40,22 @@ public final class ItemBuilder {
         ItemStack item = new ItemStack(template.getMaterial(), template.getAmount());
         item.editMeta(meta -> applyMeta(meta, template));
         return item;
+    }
+
+    private static EquipmentSlotGroup toSlotGroup(EquipmentSlot slot) {
+        if (slot == null) {
+            return EquipmentSlotGroup.ANY;
+        }
+        return switch (slot) {
+            case HAND -> EquipmentSlotGroup.MAINHAND;
+            case OFF_HAND -> EquipmentSlotGroup.OFFHAND;
+            case FEET -> EquipmentSlotGroup.FEET;
+            case LEGS -> EquipmentSlotGroup.LEGS;
+            case CHEST -> EquipmentSlotGroup.CHEST;
+            case HEAD -> EquipmentSlotGroup.HEAD;
+            case BODY -> EquipmentSlotGroup.BODY;
+            case SADDLE -> EquipmentSlotGroup.SADDLE;
+        };
     }
 
     private static void applyMeta(ItemMeta meta, CustomItemTemplate template) {
@@ -78,6 +97,14 @@ public final class ItemBuilder {
 
         if (template.isUnbreakable()) {
             meta.setUnbreakable(true);
+        }
+
+        for (CustomItemTemplate.ItemAttribute attr : template.getAttributes()) {
+            NamespacedKey key = new NamespacedKey(EasyMobsPlugin.getInstance(),
+                    template.getId() + "_" + attr.getAttribute().getKey().getKey());
+            AttributeModifier modifier = new AttributeModifier(key, attr.getAmount(), attr.getOperation(),
+                    toSlotGroup(attr.getSlot()));
+            meta.addAttributeModifier(attr.getAttribute(), modifier);
         }
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();

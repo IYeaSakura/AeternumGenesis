@@ -441,11 +441,7 @@ public final class CustomMobTemplate {
     }
 
     private static PotionEffectType parsePotionEffectType(String value) {
-        if (value == null) {
-            return null;
-        }
-        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
-        return Registry.EFFECT.get(key);
+        return net.sakurain.mc.easymobs.item.ItemEffectParser.parsePotionEffectType(value);
     }
 
     private static SensesConfig parseSenses(ConfigurationSection section) {

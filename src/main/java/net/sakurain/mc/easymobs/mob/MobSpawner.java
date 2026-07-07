@@ -84,7 +84,8 @@ public final class MobSpawner {
         applyWaterBehavior(entity, template);
         applyBreakDoor(entity, template);
         applyPdc(entity, template);
-        applyBossBar(entity, template);
+
+        MobTracker.getInstance().track(entity, template);
 
         if (entity instanceof org.bukkit.entity.Mob mob) {
             CustomMobTemplate.AIConfig ai = template.getAi();
@@ -93,7 +94,7 @@ public final class MobSpawner {
             }
         }
 
-        MobTracker.getInstance().track(entity, template);
+        applyBossBar(entity, template);
     }
 
     private static void applyDisplayName(LivingEntity entity, CustomMobTemplate template) {
@@ -293,6 +294,7 @@ public final class MobSpawner {
         );
         bossBar.setProgress(1.0);
         MobTracker.getInstance().registerBossBar(entity.getUniqueId(), bossBar);
+        MobTracker.getInstance().startBossBarTask(entity.getUniqueId());
     }
 
     /**

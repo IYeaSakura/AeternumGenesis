@@ -31,6 +31,12 @@ public final class LevelSystem {
         }
         setMobLevel(entity, level);
 
+        if (template != null && template.getDisplayName() != null && template.getDisplayName().contains("<level>")) {
+            String updated = template.getDisplayName().replace("<level>", String.valueOf(level));
+            entity.customName(net.sakurain.mc.easymobs.util.MessageUtil.color(updated));
+            entity.setCustomNameVisible(true);
+        }
+
         double multiplier = 1.0 + ((level - 1) * 0.15);
         AttributeInstance maxHealth = entity.getAttribute(Attribute.MAX_HEALTH);
         if (maxHealth != null) {

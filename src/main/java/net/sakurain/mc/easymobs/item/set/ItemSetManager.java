@@ -18,9 +18,11 @@ import org.bukkit.potion.PotionEffect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -30,6 +32,7 @@ public final class ItemSetManager {
 
     private final EasyMobsPlugin plugin;
     private final Map<String, ItemSetTemplate> sets = new HashMap<>();
+    private final Map<UUID, Set<String>> notifiedBonuses = new HashMap<>();
 
     public ItemSetManager(EasyMobsPlugin plugin) {
         this.plugin = plugin;
@@ -162,6 +165,7 @@ public final class ItemSetManager {
                 for (CustomItemTemplate.EffectEntry entry : bonus.getEffects()) {
                     applySetEffect(player, entry, appliedPotions, appliedAttrs);
                 }
+                sendMessages(player, set, bonus.getMessages());
             }
             for (ItemSetTemplate.AdvancedBonus bonus : set.getAdvancedBonuses()) {
                 if (count < bonus.getMinPieces()) {
@@ -173,6 +177,7 @@ public final class ItemSetManager {
                 for (CustomItemTemplate.EffectEntry entry : bonus.getEffects()) {
                     applySetEffect(player, entry, appliedPotions, appliedAttrs);
                 }
+                sendMessages(player, set, bonus.getMessages());
             }
         }
     }
@@ -244,6 +249,20 @@ public final class ItemSetManager {
                     player.playSound(player.getLocation(), entry.getSound(), entry.getSoundVolume(), entry.getSoundPitch());
                 }
             }
+        }
+    }
+
+    private void sendMessages(Player player, ItemSetTemplate set, List<String> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+        String key = set.getId();
+        Set<String> notified = notifiedBonuses.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>());
+        if (!notified.add(key)) {
+            return;
+        }
+        for (String message : messages) {
+            player.sendMessage(net.sakurain.mc.easymobs.util.MessageUtil.color(message));
         }
     }
 
