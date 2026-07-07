@@ -30,15 +30,21 @@ public class EntityEventListener implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof LivingEntity victim)) return;
 
-        if (event.getDamager() instanceof LivingEntity damager && MobTracker.getInstance().isCustomMob(damager)) {
-            CustomMobDamageModifyEvent modifyEvent = new CustomMobDamageModifyEvent(victim, damager, event.getDamage(), true);
-            Bukkit.getPluginManager().callEvent(modifyEvent);
-            if (modifyEvent.isCancelled()) {
+        if (event.getDamager() instanceof LivingEntity damager) {
+            if (isSameFaction(damager, victim)) {
                 event.setCancelled(true);
                 return;
             }
-            event.setDamage(modifyEvent.getDamage());
-            triggerSkills(damager, victim, "ON_HIT", event.getFinalDamage());
+            if (MobTracker.getInstance().isCustomMob(damager)) {
+                CustomMobDamageModifyEvent modifyEvent = new CustomMobDamageModifyEvent(victim, damager, event.getDamage(), true);
+                Bukkit.getPluginManager().callEvent(modifyEvent);
+                if (modifyEvent.isCancelled()) {
+                    event.setCancelled(true);
+                    return;
+                }
+                event.setDamage(modifyEvent.getDamage());
+                triggerSkills(damager, victim, "ON_HIT", event.getFinalDamage());
+            }
         }
 
         if (MobTracker.getInstance().isCustomMob(victim)) {
@@ -104,6 +110,10 @@ public class EntityEventListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity caster)) return;
         if (!MobTracker.getInstance().isCustomMob(caster)) return;
         LivingEntity target = event.getTarget() instanceof LivingEntity living ? living : null;
+        if (target != null && isSameFaction(caster, target)) {
+            event.setCancelled(true);
+            return;
+        }
         triggerSkills(caster, target, "ON_TARGET", 0);
     }
 
@@ -159,5 +169,15 @@ public class EntityEventListener implements Listener {
     private void triggerSkills(LivingEntity caster, LivingEntity target, String trigger, double damage) {
         SkillManager manager = EasyMobsPlugin.getInstance().getSkillManager();
         manager.handleTrigger(trigger, caster, target, damage);
+    }
+
+    private boolean isSameFaction(LivingEntity a, LivingEntity b) {
+        if (a.equals(b)) return false;
+        CustomMobTemplate ta = MobTracker.getInstance().getTemplate(a);
+        CustomMobTemplate tb = MobTracker.getInstance().getTemplate(b);
+        if (ta == null || tb == null) return false;
+        String fa = ta.getFaction();
+        String fb = tb.getFaction();
+        return fa != null && !fa.isEmpty() && fa.equalsIgnoreCase(fb);
     }
 }

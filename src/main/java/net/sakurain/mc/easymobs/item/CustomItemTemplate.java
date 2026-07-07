@@ -134,12 +134,18 @@ public final class CustomItemTemplate {
         private final double amount;
         private final Operation operation;
         private final EquipmentSlot slot;
+        private final boolean setValue;
 
         public ItemAttribute(Attribute attribute, double amount, Operation operation, EquipmentSlot slot) {
+            this(attribute, amount, operation, slot, false);
+        }
+
+        public ItemAttribute(Attribute attribute, double amount, Operation operation, EquipmentSlot slot, boolean setValue) {
             this.attribute = attribute;
             this.amount = amount;
             this.operation = operation;
             this.slot = slot;
+            this.setValue = setValue;
         }
 
         public Attribute getAttribute() {
@@ -156,6 +162,10 @@ public final class CustomItemTemplate {
 
         public EquipmentSlot getSlot() {
             return slot;
+        }
+
+        public boolean isSetValue() {
+            return setValue;
         }
     }
 

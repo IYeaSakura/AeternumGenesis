@@ -48,6 +48,7 @@ public final class CustomMobTemplate {
     private final WaterBehaviorConfig waterBehavior;
     private final ImmunitiesConfig immunities;
     private final BreakDoorConfig breakDoor;
+    private final String faction;
     private final AIConfig ai;
     private final DropsConfig drops;
     private final List<SkillBinding> skills;
@@ -58,7 +59,8 @@ public final class CustomMobTemplate {
                              boolean baby, BossBarConfig bossbar, List<ParticleConfig> particles,
                              AmbientSoundConfig ambientSound, List<PotionEffectConfig> potionEffects,
                              SensesConfig senses, WaterBehaviorConfig waterBehavior, ImmunitiesConfig immunities,
-                             BreakDoorConfig breakDoor, AIConfig ai, DropsConfig drops, List<SkillBinding> skills) {
+                             BreakDoorConfig breakDoor, String faction, AIConfig ai, DropsConfig drops,
+                             List<SkillBinding> skills) {
         this.id = id;
         this.type = type;
         this.displayName = displayName;
@@ -79,6 +81,7 @@ public final class CustomMobTemplate {
         this.waterBehavior = waterBehavior == null ? WaterBehaviorConfig.DEFAULT : waterBehavior;
         this.immunities = immunities == null ? ImmunitiesConfig.DEFAULT : immunities;
         this.breakDoor = breakDoor == null ? BreakDoorConfig.DEFAULT : breakDoor;
+        this.faction = faction == null ? "" : faction;
         this.ai = ai == null ? AIConfig.DEFAULT : ai;
         this.drops = drops == null ? DropsConfig.DEFAULT : drops;
         this.skills = skills == null ? List.of() : List.copyOf(skills);
@@ -168,6 +171,10 @@ public final class CustomMobTemplate {
         return ai;
     }
 
+    public String getFaction() {
+        return faction;
+    }
+
     public DropsConfig getDrops() {
         return drops;
     }
@@ -205,13 +212,14 @@ public final class CustomMobTemplate {
         WaterBehaviorConfig waterBehavior = parseWaterBehavior(config.getConfigurationSection("water_behavior"));
         ImmunitiesConfig immunities = parseImmunities(config.getConfigurationSection("immunities"));
         BreakDoorConfig breakDoor = parseBreakDoor(config.getConfigurationSection("break_door"));
+        String faction = config.getString("faction");
         AIConfig ai = parseAI(config.getConfigurationSection("ai"));
         DropsConfig drops = parseDrops(config.getConfigurationSection("drops"), id);
         List<SkillBinding> skills = parseSkills(config.getMapList("skills"));
 
         return new CustomMobTemplate(id, type, displayName, health, maxHealth, attributes, equipment,
                 equipmentEffects, glowing, glowingColor, size, baby, bossbar, particles, ambientSound,
-                potionEffects, senses, waterBehavior, immunities, breakDoor, ai, drops, skills);
+                potionEffects, senses, waterBehavior, immunities, breakDoor, faction, ai, drops, skills);
     }
 
     private static EntityType parseEntityType(String value) {
@@ -507,6 +515,7 @@ public final class CustomMobTemplate {
                 section.getBoolean("remove_default_goals", false),
                 section.getDouble("target_range", 32.0),
                 section.getBoolean("always_aggressive", false),
+                section.getStringList("targets"),
                 parseTargetingStrategy(section.getConfigurationSection("targeting_strategy")),
                 parsePathfinding(section.getConfigurationSection("pathfinding")),
                 parseBehavior(section.getConfigurationSection("behavior"))
@@ -731,9 +740,9 @@ public final class CustomMobTemplate {
     }
 
     public record AIConfig(boolean useCustomAi, boolean removeDefaultGoals, double targetRange,
-                           boolean alwaysAggressive, TargetingStrategy targetingStrategy,
+                           boolean alwaysAggressive, List<String> targets, TargetingStrategy targetingStrategy,
                            PathfindingConfig pathfinding, BehaviorConfig behavior) {
-        public static final AIConfig DEFAULT = new AIConfig(false, false, 32.0, false,
+        public static final AIConfig DEFAULT = new AIConfig(false, false, 32.0, false, List.of(),
                 TargetingStrategy.DEFAULT, PathfindingConfig.DEFAULT, BehaviorConfig.DEFAULT);
     }
 

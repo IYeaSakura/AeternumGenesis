@@ -265,6 +265,13 @@ public final class MobSpawner {
         if (!water.convertToDrowned() && entity instanceof org.bukkit.entity.Zombie zombie) {
             zombie.setConversionTime(-1);
         }
+        if (entity instanceof org.bukkit.entity.Mob mob) {
+            mob.getPathfinder().setCanFloat(water.floatOnWater() || water.surfaceSeeking());
+        }
+        AttributeInstance waterEfficiency = entity.getAttribute(Attribute.WATER_MOVEMENT_EFFICIENCY);
+        if (waterEfficiency != null) {
+            waterEfficiency.setBaseValue(Math.max(0.0, water.waterMovementSpeed()));
+        }
     }
 
     private static void applyBreakDoor(LivingEntity entity, CustomMobTemplate template) {

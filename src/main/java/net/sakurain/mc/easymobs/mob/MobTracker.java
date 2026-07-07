@@ -13,6 +13,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -276,12 +277,14 @@ public final class MobTracker {
         if (!entity.isInWater()) {
             return;
         }
+
+        // Breathing / drowning
         if (water.canBreatheUnderwater()) {
             PotionEffectType waterBreathing = PotionEffectType.WATER_BREATHING;
             if (waterBreathing != null && !entity.hasPotionEffect(waterBreathing)) {
                 entity.addPotionEffect(new PotionEffect(waterBreathing, Integer.MAX_VALUE, 0, true, false));
             }
-        } else if (entity instanceof org.bukkit.entity.Zombie zombie && !water.convertToDrowned()) {
+        } else if (entity instanceof org.bukkit.entity.Zombie && !water.convertToDrowned()) {
             int air = entity.getRemainingAir();
             if (air > 0) {
                 entity.setRemainingAir(Math.max(0, air - 5));
@@ -289,35 +292,97 @@ public final class MobTracker {
                 entity.damage(water.drownDamage(), org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.DROWN).build());
             }
         }
-        if (water.surfaceSeeking()) {
-            Location headLoc = entity.getLocation().add(0, entity.getHeight() * 0.85, 0);
-            org.bukkit.block.Block blockAbove = headLoc.clone().add(0, 1, 0).getBlock();
-            if (blockAbove.getType().isAir()) {
+
+        // Swimming behavior: try to chase target in 3D like Drowned
+        if (entity instanceof Mob mob && (water.surfaceSeeking() || water.floatOnWater())) {
+            handleSwimming(mob, water);
+            return;
+        }
+
+        // Legacy gentle buoyancy (only if not using swim logic)
+        if (water.floatOnWater()) {
+            applyBuoyancy(entity, 0.08);
+        }
+    }
+
+    private void handleSwimming(Mob mob, CustomMobTemplate.WaterBehaviorConfig water) {
+        LivingEntity target = mob.getTarget();
+        Location loc = mob.getLocation();
+        org.bukkit.block.Block feetBlock = loc.getBlock();
+        boolean feetInWater = feetBlock.getType().name().contains("WATER");
+
+        if (target != null && target.isValid()) {
+            Location targetLoc = target.getLocation();
+
+            // Direct velocity-based swimming: avoids vanilla pathfinder spinning in water.
+            org.bukkit.util.Vector direction = targetLoc.toVector().subtract(loc.toVector());
+            double distance = direction.length();
+            if (distance < 0.1) {
                 return;
             }
-            org.bukkit.util.Vector velocity = entity.getVelocity();
-            double speed = Math.max(0.05, water.surfaceMovementSpeed() * 0.15);
-            if (velocity.getY() < speed) {
-                entity.setVelocity(velocity.setY(speed));
+            direction.normalize();
+
+            // Rotate body to face the movement direction (lookAt only rotates the head).
+            Location look = loc.clone().setDirection(direction);
+            mob.setRotation(look.getYaw(), look.getPitch());
+
+            double baseSpeed = Math.max(0.1, water.waterMovementSpeed());
+            // Slow down when very close to avoid overshooting/oscillation.
+            double speed = distance < 2.0 ? baseSpeed * (distance / 2.0) : baseSpeed;
+
+            org.bukkit.util.Vector velocity = direction.multiply(speed);
+            mob.setVelocity(velocity);
+
+            // Stop any pending path so vanilla pathfinder does not fight the velocity.
+            mob.getPathfinder().stopPathfinding();
+            return;
+        }
+
+        // No target: surface seeking / idle floating
+        if (water.surfaceSeeking()) {
+            seekSurface(mob, loc, feetInWater, water);
+        } else if (water.floatOnWater()) {
+            applyBuoyancy(mob, 0.08);
+        }
+    }
+
+    private void seekSurface(Mob mob, Location loc, boolean feetInWater, CustomMobTemplate.WaterBehaviorConfig water) {
+        double headY = loc.getY() + mob.getHeight() * 0.85;
+        org.bukkit.block.Block headBlock = loc.getWorld().getBlockAt((int) Math.floor(loc.getX()), (int) Math.floor(headY), (int) Math.floor(loc.getZ()));
+        org.bukkit.block.Block blockAbove = headBlock.getRelative(org.bukkit.block.BlockFace.UP);
+        org.bukkit.util.Vector velocity = mob.getVelocity();
+
+        if (!headBlock.getType().name().contains("WATER") || blockAbove.getType().isAir()) {
+            // Head is already out of water or just below air: maintain gentle buoyancy to stay afloat
+            if (feetInWater && velocity.getY() < 0.05) {
+                mob.setVelocity(velocity.setY(0.05));
             }
             return;
         }
-        if (water.floatOnWater()) {
-            Location eyeLoc = entity.getEyeLocation();
-            if (eyeLoc.getBlock().getType().isAir()) {
-                return;
-            }
-            org.bukkit.util.Vector velocity = entity.getVelocity();
-            if (velocity.getY() < 0.08) {
-                entity.setVelocity(velocity.setY(0.08));
-            }
+
+        // Fully submerged: push up more strongly
+        double speed = Math.max(0.1, water.surfaceMovementSpeed() * 0.2);
+        if (velocity.getY() < speed) {
+            mob.setVelocity(velocity.setY(speed));
+        }
+    }
+
+    private void applyBuoyancy(LivingEntity entity, double minY) {
+        Location eyeLoc = entity.getEyeLocation();
+        if (eyeLoc.getBlock().getType().isAir()) {
+            return;
+        }
+        org.bukkit.util.Vector velocity = entity.getVelocity();
+        if (velocity.getY() < minY) {
+            entity.setVelocity(velocity.setY(minY));
         }
     }
 
     private void startAITask(UUID uuid, CustomMobTemplate template, List<BukkitTask> tasks) {
         CustomMobTemplate.AIConfig ai = template.getAi();
         // The custom AI goal system handles targeting when useCustomAi is enabled.
-        if (ai.useCustomAi() || !ai.alwaysAggressive()) {
+        boolean hasCustomTargets = ai.targets() != null && !ai.targets().isEmpty();
+        if (ai.useCustomAi() || (!ai.alwaysAggressive() && !hasCustomTargets)) {
             return;
         }
         tasks.add(SchedulerUtil.runTimer(AI_UPDATE_INTERVAL, AI_UPDATE_INTERVAL, () -> {
@@ -325,11 +390,25 @@ public final class MobTracker {
             if (entity == null) {
                 return;
             }
-            updateAI(entity, ai);
+            updateAI(entity, template);
         }));
     }
 
-    private void updateAI(LivingEntity entity, CustomMobTemplate.AIConfig ai) {
+    private void updateAI(LivingEntity entity, CustomMobTemplate template) {
+        CustomMobTemplate.AIConfig ai = template.getAi();
+        if (ai == null) {
+            return;
+        }
+
+        // Custom target list takes precedence over the simple always-aggressive logic.
+        if (ai.targets() != null && !ai.targets().isEmpty()) {
+            LivingEntity target = findNearestMatchingTarget(entity, ai.targetRange(), ai.targets());
+            if (target != null && entity instanceof org.bukkit.entity.Mob mob) {
+                mob.setTarget(target);
+            }
+            return;
+        }
+
         if (!ai.alwaysAggressive()) {
             return;
         }
@@ -348,7 +427,7 @@ public final class MobTracker {
             if (!(nearby instanceof LivingEntity living) || nearby.equals(entity)) {
                 continue;
             }
-            if (living.isDead()) {
+            if (living.isDead() || isSameFaction(entity, living)) {
                 continue;
             }
             double dist = entity.getLocation().distanceSquared(living.getLocation());
@@ -364,6 +443,69 @@ public final class MobTracker {
             }
         }
         return nearest;
+    }
+
+    private LivingEntity findNearestMatchingTarget(LivingEntity entity, double range, List<String> targets) {
+        double rangeSq = range * range;
+        LivingEntity nearest = null;
+        double nearestDist = Double.MAX_VALUE;
+
+        for (Entity nearby : entity.getNearbyEntities(range, range, range)) {
+            if (!(nearby instanceof LivingEntity living) || nearby.equals(entity)) {
+                continue;
+            }
+            if (living.isDead() || isSameFaction(entity, living)) {
+                continue;
+            }
+            if (!matchesTarget(living, targets)) {
+                continue;
+            }
+            double dist = entity.getLocation().distanceSquared(living.getLocation());
+            if (dist <= rangeSq && dist < nearestDist) {
+                nearestDist = dist;
+                nearest = living;
+            }
+        }
+        return nearest;
+    }
+
+    private boolean matchesTarget(LivingEntity candidate, List<String> targets) {
+        for (String target : targets) {
+            String lower = target.toLowerCase();
+            switch (lower) {
+                case "players" -> {
+                    if (candidate instanceof Player) return true;
+                }
+                case "mobs" -> {
+                    if (candidate instanceof Mob) return true;
+                }
+                default -> {
+                    if (lower.startsWith("faction:")) {
+                        String faction = lower.substring(8);
+                        CustomMobTemplate t = getTemplate(candidate);
+                        if (t != null && faction.equalsIgnoreCase(t.getFaction())) {
+                            return true;
+                        }
+                    } else {
+                        try {
+                            org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(target.toUpperCase());
+                            if (candidate.getType() == type) return true;
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isSameFaction(LivingEntity a, LivingEntity b) {
+        CustomMobTemplate ta = getTemplate(a);
+        CustomMobTemplate tb = getTemplate(b);
+        if (ta == null || tb == null) return false;
+        String fa = ta.getFaction();
+        String fb = tb.getFaction();
+        return fa != null && !fa.isEmpty() && fa.equalsIgnoreCase(fb);
     }
 
     private LivingEntity getLivingEntity(UUID uuid) {

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
 import net.sakurain.mc.easymobs.mob.CustomMobTemplate;
+import net.sakurain.mc.easymobs.mob.MobTracker;
 
 import java.util.*;
 
@@ -112,13 +113,20 @@ public class CustomAIController {
         CustomMobTemplate.SensesConfig senses = template.getSenses();
         double range = ai.targetRange();
         Location loc = mob.getLocation();
+        List<String> targets = ai.targets();
+        boolean hasCustomTargets = targets != null && !targets.isEmpty();
         List<LivingEntity> candidates = new ArrayList<>();
 
         for (Entity e : mob.getWorld().getNearbyEntities(loc, range, range, range)) {
             if (!(e instanceof LivingEntity target)) continue;
             if (target.equals(mob)) continue;
             if (target.isDead()) continue;
-            if (strategy.preferPlayers() && !(target instanceof Player)) continue;
+            if (isSameFaction(template, target)) continue;
+            if (hasCustomTargets) {
+                if (!matchesTarget(target, targets)) continue;
+            } else {
+                if (strategy.preferPlayers() && !(target instanceof Player)) continue;
+            }
             if (senses != null && !SenseSystem.canSense(mob, target, senses)) continue;
             candidates.add(target);
         }
@@ -139,6 +147,38 @@ public class CustomAIController {
             default -> candidates.stream()
                     .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(loc))).orElse(null);
         };
+    }
+
+    private boolean isSameFaction(@NotNull CustomMobTemplate template, @NotNull LivingEntity candidate) {
+        String faction = template.getFaction();
+        if (faction == null || faction.isEmpty()) return false;
+        CustomMobTemplate other = MobTracker.getInstance().getTemplate(candidate);
+        if (other == null) return false;
+        return faction.equalsIgnoreCase(other.getFaction());
+    }
+
+    private boolean matchesTarget(@NotNull LivingEntity candidate, @NotNull List<String> targets) {
+        for (String target : targets) {
+            String lower = target.toLowerCase();
+            switch (lower) {
+                case "players" -> { if (candidate instanceof Player) return true; }
+                case "mobs" -> { if (candidate instanceof Mob) return true; }
+                default -> {
+                    if (lower.startsWith("faction:")) {
+                        String faction = lower.substring(8);
+                        CustomMobTemplate t = MobTracker.getInstance().getTemplate(candidate);
+                        if (t != null && faction.equalsIgnoreCase(t.getFaction())) return true;
+                    } else {
+                        try {
+                            org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(target.toUpperCase());
+                            if (candidate.getType() == type) return true;
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private double scoreTarget(@NotNull Mob mob, @Nullable LivingEntity target,

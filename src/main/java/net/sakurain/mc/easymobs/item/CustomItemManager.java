@@ -163,9 +163,11 @@ public final class CustomItemManager {
                 continue;
             }
             double amount = ItemEffectParser.getDouble(map, "amount", 0);
-            Operation operation = ItemEffectParser.parseOperation(ItemEffectParser.getString(map, "operation"));
+            String operationRaw = ItemEffectParser.getString(map, "operation");
+            boolean setValue = "SET_VALUE".equalsIgnoreCase(operationRaw);
+            Operation operation = setValue ? Operation.ADD_NUMBER : ItemEffectParser.parseOperation(operationRaw);
             EquipmentSlot slot = ItemEffectParser.parseEquipmentSlot(ItemEffectParser.getString(map, "slot"));
-            result.add(new CustomItemTemplate.ItemAttribute(attribute, amount, operation, slot));
+            result.add(new CustomItemTemplate.ItemAttribute(attribute, amount, operation, slot, setValue));
         }
         return result;
     }
