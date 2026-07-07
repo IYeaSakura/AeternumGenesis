@@ -119,8 +119,16 @@ public final class ItemEffectParser {
         if (value == null) {
             return null;
         }
-        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
-        return Registry.ATTRIBUTE.get(key);
+        String normalized = value.toLowerCase();
+        if (normalized.contains(":")) {
+            NamespacedKey key = NamespacedKey.fromString(normalized);
+            return key != null ? Registry.ATTRIBUTE.get(key) : null;
+        }
+        Attribute attr = Registry.ATTRIBUTE.get(NamespacedKey.minecraft(normalized));
+        if (attr != null) {
+            return attr;
+        }
+        return Registry.ATTRIBUTE.get(NamespacedKey.minecraft("generic." + normalized));
     }
 
     public static Operation parseOperation(String value) {

@@ -1,6 +1,7 @@
 package net.sakurain.mc.easymobs.mob;
 
 import net.sakurain.mc.easymobs.EasyMobsPlugin;
+import net.sakurain.mc.easymobs.item.ItemEffectParser;
 import net.sakurain.mc.easymobs.skill.SkillBinding;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -249,11 +250,7 @@ public final class CustomMobTemplate {
     }
 
     private static Attribute parseAttribute(String value) {
-        if (value == null) {
-            return null;
-        }
-        NamespacedKey key = NamespacedKey.minecraft(value.toLowerCase());
-        return Registry.ATTRIBUTE.get(key);
+        return ItemEffectParser.parseAttribute(value);
     }
 
     private static AttributeModifier.Operation parseOperation(String value) {
@@ -467,7 +464,9 @@ public final class CustomMobTemplate {
                 section.getDouble("water_movement_speed", 0.5),
                 section.getDouble("surface_movement_speed", 0.7),
                 section.getBoolean("can_breathe_underwater", false),
-                section.getDouble("drown_damage", 2.0)
+                section.getDouble("drown_damage", 2.0),
+                section.getBoolean("convert_to_drowned", true),
+                section.getBoolean("surface_seeking", false)
         );
     }
 
@@ -716,8 +715,9 @@ public final class CustomMobTemplate {
     }
 
     public record WaterBehaviorConfig(boolean floatOnWater, double waterMovementSpeed, double surfaceMovementSpeed,
-                                       boolean canBreatheUnderwater, double drownDamage) {
-        public static final WaterBehaviorConfig DEFAULT = new WaterBehaviorConfig(true, 0.5, 0.7, false, 2.0);
+                                       boolean canBreatheUnderwater, double drownDamage, boolean convertToDrowned,
+                                       boolean surfaceSeeking) {
+        public static final WaterBehaviorConfig DEFAULT = new WaterBehaviorConfig(true, 0.5, 0.7, false, 2.0, true, false);
     }
 
     public record ImmunitiesConfig(boolean fire, boolean projectile, boolean melee, boolean potion, boolean sunlight,

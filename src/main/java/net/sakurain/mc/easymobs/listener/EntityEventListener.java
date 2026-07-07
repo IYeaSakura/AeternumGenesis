@@ -18,6 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
+import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -111,6 +112,19 @@ public class EntityEventListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity caster)) return;
         if (!MobTracker.getInstance().isCustomMob(caster)) return;
         triggerSkills(caster, null, "ON_TELEPORT", 0);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityTransform(EntityTransformEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        if (!MobTracker.getInstance().isCustomMob(entity)) return;
+        CustomMobTemplate template = MobTracker.getInstance().getTemplate(entity);
+        if (template == null) return;
+        if (event.getTransformReason() == EntityTransformEvent.TransformReason.DROWNED) {
+            if (!template.getWaterBehavior().convertToDrowned()) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     private List<ItemStack> resolveDrops(CustomMobTemplate.DropsConfig drops) {

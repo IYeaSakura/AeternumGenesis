@@ -105,6 +105,8 @@ public final class ItemBuilder {
             AttributeModifier modifier = new AttributeModifier(key, attr.getAmount(), attr.getOperation(),
                     toSlotGroup(attr.getSlot()));
             meta.addAttributeModifier(attr.getAttribute(), modifier);
+            EasyMobsPlugin.getInstance().getLogger().fine("Applied attribute " + attr.getAttribute().getKey()
+                    + " to " + template.getId() + " with amount " + attr.getAmount());
         }
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();

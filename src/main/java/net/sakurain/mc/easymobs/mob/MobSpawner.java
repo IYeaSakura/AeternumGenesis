@@ -262,7 +262,9 @@ public final class MobSpawner {
                 entity.addPotionEffect(new PotionEffect(waterBreathing, Integer.MAX_VALUE, 0, true, false));
             }
         }
-        // Bukkit API has limited direct water controls; the remaining fields are stored for future NMS-free extensions.
+        if (!water.convertToDrowned() && entity instanceof org.bukkit.entity.Zombie zombie) {
+            zombie.setConversionTime(-1);
+        }
     }
 
     private static void applyBreakDoor(LivingEntity entity, CustomMobTemplate template) {

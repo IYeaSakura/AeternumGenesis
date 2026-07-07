@@ -16,6 +16,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -75,6 +77,7 @@ public final class MobTracker {
         startParticleTasks(uuid, template, tasks);
         startSoundTask(uuid, template, tasks);
         startBossBarTask(uuid, template, tasks, true);
+        startWaterBehaviorTask(uuid, template, tasks);
         startAITask(uuid, template, tasks);
         activeTasks.put(uuid, tasks);
     }
@@ -253,6 +256,62 @@ public final class MobTracker {
     private double getMaxHealth(LivingEntity entity) {
         AttributeInstance instance = entity.getAttribute(Attribute.MAX_HEALTH);
         return instance != null ? instance.getBaseValue() : entity.getHealth();
+    }
+
+    private void startWaterBehaviorTask(UUID uuid, CustomMobTemplate template, List<BukkitTask> tasks) {
+        CustomMobTemplate.WaterBehaviorConfig water = template.getWaterBehavior();
+        if (water == null) {
+            return;
+        }
+        tasks.add(SchedulerUtil.runTimer(5L, 5L, () -> {
+            LivingEntity entity = getLivingEntity(uuid);
+            if (entity == null) {
+                return;
+            }
+            handleWaterBehavior(entity, water);
+        }));
+    }
+
+    private void handleWaterBehavior(LivingEntity entity, CustomMobTemplate.WaterBehaviorConfig water) {
+        if (!entity.isInWater()) {
+            return;
+        }
+        if (water.canBreatheUnderwater()) {
+            PotionEffectType waterBreathing = PotionEffectType.WATER_BREATHING;
+            if (waterBreathing != null && !entity.hasPotionEffect(waterBreathing)) {
+                entity.addPotionEffect(new PotionEffect(waterBreathing, Integer.MAX_VALUE, 0, true, false));
+            }
+        } else if (entity instanceof org.bukkit.entity.Zombie zombie && !water.convertToDrowned()) {
+            int air = entity.getRemainingAir();
+            if (air > 0) {
+                entity.setRemainingAir(Math.max(0, air - 5));
+            } else {
+                entity.damage(water.drownDamage(), org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.DROWN).build());
+            }
+        }
+        if (water.surfaceSeeking()) {
+            Location headLoc = entity.getLocation().add(0, entity.getHeight() * 0.85, 0);
+            org.bukkit.block.Block blockAbove = headLoc.clone().add(0, 1, 0).getBlock();
+            if (blockAbove.getType().isAir()) {
+                return;
+            }
+            org.bukkit.util.Vector velocity = entity.getVelocity();
+            double speed = Math.max(0.05, water.surfaceMovementSpeed() * 0.15);
+            if (velocity.getY() < speed) {
+                entity.setVelocity(velocity.setY(speed));
+            }
+            return;
+        }
+        if (water.floatOnWater()) {
+            Location eyeLoc = entity.getEyeLocation();
+            if (eyeLoc.getBlock().getType().isAir()) {
+                return;
+            }
+            org.bukkit.util.Vector velocity = entity.getVelocity();
+            if (velocity.getY() < 0.08) {
+                entity.setVelocity(velocity.setY(0.08));
+            }
+        }
     }
 
     private void startAITask(UUID uuid, CustomMobTemplate template, List<BukkitTask> tasks) {

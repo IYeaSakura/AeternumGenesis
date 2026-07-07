@@ -23,7 +23,8 @@ Thumbs.db
 # Test server (local)
 server/
 plugins/
+.doc/
+test/
 
 # Local environment
 .env
-.doc/
