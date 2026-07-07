@@ -12,6 +12,7 @@ import net.sakurain.mc.easymobs.mob.MobTracker;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -188,5 +189,20 @@ public class MobAPIImpl implements MobAPI {
         if (template != null) {
             LevelSystem.applyLevel(entity, level, template);
         }
+    }
+
+    @Override
+    public boolean registerTemplate(@NotNull String templateId, @NotNull ConfigurationSection config) {
+        String id = templateId.toLowerCase();
+        CustomMobTemplate template = CustomMobTemplate.fromConfig(id, config);
+        if (template == null) {
+            return false;
+        }
+        return plugin.getMobManager().addTemplate(id, template);
+    }
+
+    @Override
+    public boolean unregisterTemplate(@NotNull String templateId) {
+        return plugin.getMobManager().removeTemplate(templateId);
     }
 }

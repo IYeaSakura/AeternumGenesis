@@ -200,4 +200,28 @@ public final class SpawnManager {
     public int getRuleCount() {
         return rules.size();
     }
+
+    public boolean addRule(SpawnRule rule) {
+        if (rule == null) {
+            return false;
+        }
+        List<SpawnRule> updated = new ArrayList<>(this.rules);
+        updated.removeIf(r -> r.getId().equalsIgnoreCase(rule.getId()));
+        updated.add(rule);
+        updated.sort(Comparator.comparingInt(SpawnRule::getPriority).reversed());
+        this.rules = List.copyOf(updated);
+        return true;
+    }
+
+    public boolean removeRule(String id) {
+        if (id == null) {
+            return false;
+        }
+        List<SpawnRule> updated = new ArrayList<>(this.rules);
+        boolean removed = updated.removeIf(r -> r.getId().equalsIgnoreCase(id));
+        if (removed) {
+            this.rules = List.copyOf(updated);
+        }
+        return removed;
+    }
 }

@@ -3,6 +3,7 @@ package net.sakurain.mc.easymobs.api;
 import net.sakurain.mc.easymobs.api.SkillCondition;
 import net.sakurain.mc.easymobs.api.SkillEffect;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,4 +40,8 @@ public interface SkillAPI {
     void registerEffect(@NotNull String type, @NotNull Supplier<SkillEffect> factory);
 
     void registerCondition(@NotNull String type, @NotNull Supplier<SkillCondition> factory);
+
+    boolean registerSkill(@NotNull String skillId, @NotNull ConfigurationSection config);
+
+    boolean unregisterSkill(@NotNull String skillId);
 }

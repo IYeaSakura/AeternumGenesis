@@ -102,4 +102,16 @@ public final class CustomMobManager {
     public int getTemplateCount() {
         return templates.size();
     }
+
+    public boolean addTemplate(String id, CustomMobTemplate template) {
+        if (id == null || template == null) {
+            return false;
+        }
+        templates.put(id.toLowerCase(), template);
+        return true;
+    }
+
+    public boolean removeTemplate(String id) {
+        return id != null && templates.remove(id.toLowerCase()) != null;
+    }
 }

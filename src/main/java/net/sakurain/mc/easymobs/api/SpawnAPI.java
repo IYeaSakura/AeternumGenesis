@@ -1,6 +1,7 @@
 package net.sakurain.mc.easymobs.api;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
@@ -21,4 +22,8 @@ public interface SpawnAPI {
     boolean canSpawn(@NotNull String mobTemplateId, @NotNull Location location);
 
     int countActiveSpawnRules();
+
+    boolean registerRule(@NotNull String ruleId, @NotNull ConfigurationSection config);
+
+    boolean unregisterRule(@NotNull String ruleId);
 }

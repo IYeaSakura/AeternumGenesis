@@ -8,6 +8,7 @@ import net.sakurain.mc.easymobs.mob.CustomMobTemplate;
 import net.sakurain.mc.easymobs.mob.MobSpawner;
 import net.sakurain.mc.easymobs.spawn.SpawnRule;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,5 +72,19 @@ public class SpawnAPIImpl implements SpawnAPI {
     @Override
     public int countActiveSpawnRules() {
         return plugin.getSpawnManager().getRuleCount();
+    }
+
+    @Override
+    public boolean registerRule(@NotNull String ruleId, @NotNull ConfigurationSection config) {
+        SpawnRule rule = SpawnRule.fromConfig(ruleId.toLowerCase(), config);
+        if (rule == null) {
+            return false;
+        }
+        return plugin.getSpawnManager().addRule(rule);
+    }
+
+    @Override
+    public boolean unregisterRule(@NotNull String ruleId) {
+        return plugin.getSpawnManager().removeRule(ruleId);
     }
 }

@@ -213,6 +213,21 @@ public class SkillManager {
         return templates.size();
     }
 
+    public boolean addTemplate(String id, SkillTemplate template) {
+        if (id == null || template == null) {
+            return false;
+        }
+        templates.put(id.toLowerCase(), template);
+        return true;
+    }
+
+    public boolean removeTemplate(String id) {
+        if (id == null) {
+            return false;
+        }
+        return templates.remove(id.toLowerCase()) != null;
+    }
+
     public boolean isOnCooldown(LivingEntity entity, String skillId) {
         return SkillCooldownManager.isOnCooldown(entity, skillId);
     }

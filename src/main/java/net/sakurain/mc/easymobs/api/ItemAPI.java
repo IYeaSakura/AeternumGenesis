@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.api;
 
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -40,4 +41,21 @@ public interface ItemAPI {
 
     @NotNull
     NamespacedKey getItemIdKey();
+
+    /**
+     * Registers or overrides an item template from a configuration section at runtime.
+     *
+     * @param templateId the template id
+     * @param config     the configuration section
+     * @return true if registered successfully
+     */
+    boolean registerTemplate(@NotNull String templateId, @NotNull ConfigurationSection config);
+
+    /**
+     * Unregisters a runtime-registered item template.
+     *
+     * @param templateId the template id
+     * @return true if removed
+     */
+    boolean unregisterTemplate(@NotNull String templateId);
 }

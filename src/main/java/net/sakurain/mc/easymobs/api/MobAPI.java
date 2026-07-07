@@ -2,6 +2,7 @@ package net.sakurain.mc.easymobs.api;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
@@ -65,4 +66,21 @@ public interface MobAPI {
     int getMobLevel(@NotNull LivingEntity entity);
 
     void setMobLevel(@NotNull LivingEntity entity, int level);
+
+    /**
+     * Registers or overrides a mob template from a configuration section at runtime.
+     *
+     * @param templateId the template id
+     * @param config     the configuration section
+     * @return true if registered successfully
+     */
+    boolean registerTemplate(@NotNull String templateId, @NotNull ConfigurationSection config);
+
+    /**
+     * Unregisters a runtime-registered mob template.
+     *
+     * @param templateId the template id
+     * @return true if removed
+     */
+    boolean unregisterTemplate(@NotNull String templateId);
 }

@@ -1,0 +1,26 @@
+name: EasyMobsRpgIntegration
+version: ${project.version}
+main: net.sakurain.mc.easymobs.examples.rpg.RpgIntegrationPlugin
+api-version: '1.21.6'
+depend: [EasyMobs]
+author: Sakurain
+commands:
+  rpgitem:
+    description: Give a runtime-registered RPG item.
+    usage: /rpgitem <player> <template>
+    permission: easymobsrpg.item
+  rpgmob:
+    description: Spawn a runtime-registered RPG mob.
+    usage: /rpgmob <template>
+    permission: easymobsrpg.mob
+  rpgskill:
+    description: Trigger a runtime-registered RPG skill.
+    usage: /rpgskill <skill>
+    permission: easymobsrpg.skill
+permissions:
+  easymobsrpg.item:
+    default: op
+  easymobsrpg.mob:
+    default: op
+  easymobsrpg.skill:
+    default: op

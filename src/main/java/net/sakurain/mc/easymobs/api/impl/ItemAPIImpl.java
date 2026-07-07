@@ -10,6 +10,7 @@ import net.sakurain.mc.easymobs.item.ItemIdentifier;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -121,5 +122,15 @@ public class ItemAPIImpl implements ItemAPI {
     @NotNull
     public NamespacedKey getItemIdKey() {
         return itemIdKey;
+    }
+
+    @Override
+    public boolean registerTemplate(@NotNull String templateId, @NotNull ConfigurationSection config) {
+        return plugin.getItemManager().registerTemplate(templateId, config);
+    }
+
+    @Override
+    public boolean unregisterTemplate(@NotNull String templateId) {
+        return plugin.getItemManager().unregisterTemplate(templateId);
     }
 }

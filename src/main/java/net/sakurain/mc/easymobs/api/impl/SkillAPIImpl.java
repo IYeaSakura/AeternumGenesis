@@ -5,7 +5,9 @@ import net.sakurain.mc.easymobs.api.SkillAPI;
 import net.sakurain.mc.easymobs.api.SkillCondition;
 import net.sakurain.mc.easymobs.api.SkillEffect;
 import net.sakurain.mc.easymobs.skill.SkillManager;
+import net.sakurain.mc.easymobs.skill.SkillTemplate;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Registry;
@@ -137,5 +139,19 @@ public class SkillAPIImpl implements SkillAPI {
         public boolean test(net.sakurain.mc.easymobs.skill.SkillContext context) {
             return apiCondition.test(context);
         }
+    }
+
+    @Override
+    public boolean registerSkill(@NotNull String skillId, @NotNull ConfigurationSection config) {
+        SkillTemplate template = SkillTemplate.fromConfig(skillId, config);
+        if (template == null) {
+            return false;
+        }
+        return plugin.getSkillManager().addTemplate(skillId.toLowerCase(), template);
+    }
+
+    @Override
+    public boolean unregisterSkill(@NotNull String skillId) {
+        return plugin.getSkillManager().removeTemplate(skillId);
     }
 }

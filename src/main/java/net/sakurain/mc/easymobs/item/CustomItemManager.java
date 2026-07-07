@@ -269,4 +269,25 @@ public final class CustomItemManager {
         }
         return result;
     }
+
+    public boolean registerTemplate(String id, ConfigurationSection section) {
+        if (id == null || section == null) {
+            return false;
+        }
+        try {
+            CustomItemTemplate template = parseTemplate(id.toLowerCase(), section);
+            if (template == null) {
+                return false;
+            }
+            templates.put(template.getId(), template);
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to register item template '" + id + "'", e);
+            return false;
+        }
+    }
+
+    public boolean unregisterTemplate(String id) {
+        return id != null && templates.remove(id.toLowerCase()) != null;
+    }
 }
