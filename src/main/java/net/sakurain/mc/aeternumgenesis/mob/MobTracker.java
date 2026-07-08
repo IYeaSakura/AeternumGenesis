@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Singleton tracker for custom mobs. Manages periodic particle, sound, bossbar and AI tasks.
@@ -38,14 +39,62 @@ public final class MobTracker {
     private static final NamespacedKey MOB_ID_KEY = new NamespacedKey("genesis", "genesis_mob_id");
     private static final long BOSSBAR_UPDATE_INTERVAL = 5L;
     private static final long AI_UPDATE_INTERVAL = 10L;
+    private static final long TIMER_SKILL_INTERVAL = 20L;
 
     private final AeternumGenesisPlugin plugin;
     private final Map<UUID, CustomMobTemplate> trackedMobs = new HashMap<>();
     private final Map<UUID, List<BukkitTask>> activeTasks = new HashMap<>();
     private final Map<UUID, BossBar> activeBossBars = new HashMap<>();
+    private final Map<UUID, Map<String, Long>> lastTimerTicks = new HashMap<>();
 
     private MobTracker() {
         this.plugin = AeternumGenesisPlugin.getInstance();
+        startGlobalTimerTask();
+    }
+
+    private void startGlobalTimerTask() {
+        SchedulerUtil.runTimer(TIMER_SKILL_INTERVAL, TIMER_SKILL_INTERVAL, () -> {
+            long currentTick = Bukkit.getCurrentTick();
+            for (UUID uuid : new ArrayList<>(trackedMobs.keySet())) {
+                LivingEntity entity = getLivingEntity(uuid);
+                if (entity == null || entity.isDead()) {
+                    continue;
+                }
+                CustomMobTemplate template = trackedMobs.get(uuid);
+                if (template == null) {
+                    continue;
+                }
+                checkTimerSkills(entity, template, currentTick);
+            }
+        });
+    }
+
+    private void checkTimerSkills(LivingEntity entity, CustomMobTemplate template, long currentTick) {
+        boolean hasTimer = false;
+        for (net.sakurain.mc.aeternumgenesis.skill.SkillBinding binding : template.getSkills()) {
+            if (!"on_timer".equalsIgnoreCase(binding.trigger())) {
+                continue;
+            }
+            hasTimer = true;
+            int interval = binding.interval();
+            if (interval <= 0) {
+                interval = 100;
+            }
+            Map<String, Long> map = lastTimerTicks.computeIfAbsent(entity.getUniqueId(), k -> new HashMap<>());
+            Long last = map.get(binding.skillId());
+            if (last != null && (currentTick - last) < interval) {
+                continue;
+            }
+            if (ThreadLocalRandom.current().nextDouble() * 100.0 >= binding.chance()) {
+                map.put(binding.skillId(), currentTick);
+                continue;
+            }
+            map.put(binding.skillId(), currentTick);
+            plugin.getSkillManager().triggerBinding(entity, entity, 0.0, binding);
+        }
+        if (!hasTimer) {
+            lastTimerTicks.remove(entity.getUniqueId());
+        }
     }
 
     /**
@@ -550,6 +599,7 @@ public final class MobTracker {
         if (bossBar != null) {
             bossBar.removeAll();
         }
+        lastTimerTicks.remove(uuid);
     }
 
     /**
@@ -565,6 +615,7 @@ public final class MobTracker {
             bossBar.removeAll();
         }
         activeBossBars.clear();
+        lastTimerTicks.clear();
     }
 
     /**
@@ -693,6 +744,31 @@ public final class MobTracker {
             if (center.distanceSquared(entity.getLocation()) <= radiusSq) {
                 count++;
             }
+        }
+        return count;
+    }
+
+    /**
+     * Counts the number of tracked custom mobs of the given template across all loaded worlds.
+     *
+     * @param templateId template id to match
+     * @return number of matching custom mobs
+     */
+    public int countGlobalMobs(String templateId) {
+        if (templateId == null) {
+            return 0;
+        }
+        String targetId = templateId.toLowerCase();
+        int count = 0;
+        for (java.util.Map.Entry<UUID, CustomMobTemplate> entry : trackedMobs.entrySet()) {
+            if (!entry.getValue().getId().equals(targetId)) {
+                continue;
+            }
+            org.bukkit.entity.Entity entity = org.bukkit.Bukkit.getEntity(entry.getKey());
+            if (!(entity instanceof LivingEntity living) || living.isDead()) {
+                continue;
+            }
+            count++;
         }
         return count;
     }

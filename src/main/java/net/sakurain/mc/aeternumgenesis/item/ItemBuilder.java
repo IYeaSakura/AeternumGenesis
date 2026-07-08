@@ -13,6 +13,7 @@ import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -156,6 +157,17 @@ public final class ItemBuilder {
             meta.addAttributeModifier(attr.getAttribute(), modifier);
             AeternumGenesisPlugin.getInstance().getLogger().fine("Applied attribute " + attr.getAttribute().getKey()
                     + " to " + template.getId() + " with amount " + modifier.getAmount());
+        }
+
+        if (meta instanceof PotionMeta potionMeta && template.getPotionColor() != null) {
+            potionMeta.setColor(template.getPotionColor());
+        }
+        if (template.getMaxStackSize() != null) {
+            try {
+                meta.setMaxStackSize(Math.max(1, Math.min(99, template.getMaxStackSize())));
+            } catch (NoSuchMethodError ignored) {
+                // Fallback for older Paper builds without ItemMeta#setMaxStackSize.
+            }
         }
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();

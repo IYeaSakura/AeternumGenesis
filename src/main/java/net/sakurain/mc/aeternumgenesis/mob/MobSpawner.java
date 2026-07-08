@@ -84,6 +84,9 @@ public final class MobSpawner {
         applyWaterBehavior(entity, template);
         applyBreakDoor(entity, template);
         applyPdc(entity, template);
+        if (template.isPreventItemPickup() && entity instanceof org.bukkit.entity.Mob mob) {
+            mob.setCanPickupItems(false);
+        }
 
         MobTracker.getInstance().track(entity, template);
 

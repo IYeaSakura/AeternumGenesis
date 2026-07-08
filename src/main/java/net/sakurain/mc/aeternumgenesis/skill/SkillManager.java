@@ -50,6 +50,7 @@ public class SkillManager {
         registerEffect("ignite", IgniteEffect::new);
         registerEffect("extinguish", ExtinguishEffect::new);
         registerEffect("knockback", KnockbackEffect::new);
+        registerEffect("pull", PullEffect::new);
         registerEffect("message", MessageEffect::new);
         registerEffect("title", TitleEffect::new);
         registerEffect("actionbar", ActionBarEffect::new);
@@ -130,7 +131,7 @@ public class SkillManager {
         }
     }
 
-    private void triggerBinding(LivingEntity caster, LivingEntity target, double damage, SkillBinding binding) {
+    public void triggerBinding(LivingEntity caster, LivingEntity target, double damage, SkillBinding binding) {
         SkillTemplate template = templates.get(binding.skillId().toLowerCase());
         if (template == null) {
             return;

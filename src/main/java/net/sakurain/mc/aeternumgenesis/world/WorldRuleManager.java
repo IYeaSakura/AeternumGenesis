@@ -129,6 +129,7 @@ public final class WorldRuleManager implements Listener {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void restoreOriginalGameRules() {
         for (Map.Entry<World, Map<GameRule<?>, Object>> entry : originalGameRules.entrySet()) {
             World world = entry.getKey();

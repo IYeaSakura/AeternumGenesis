@@ -9,6 +9,7 @@ import net.sakurain.mc.aeternumgenesis.mob.CustomMobManager;
 import net.sakurain.mc.aeternumgenesis.mob.CustomMobTemplate;
 import net.sakurain.mc.aeternumgenesis.mob.LevelSystem;
 import net.sakurain.mc.aeternumgenesis.mob.MobSpawner;
+import net.sakurain.mc.aeternumgenesis.mob.MobTracker;
 import net.sakurain.mc.aeternumgenesis.util.ConfigParseUtil;
 import net.sakurain.mc.aeternumgenesis.util.MessageUtil;
 import org.bukkit.Bukkit;
@@ -57,6 +58,8 @@ public final class EventActionExecutor {
             case "punish_all" -> executePunishAll(action.parameters(), instance);
             case "command_console" -> executeCommandConsole(action.parameters(), instance);
             case "command_player" -> executeCommandPlayer(action.parameters(), instance);
+            case "kill_mobs" -> executeKillMobs(action.parameters(), instance);
+            case "despawn_mobs" -> executeDespawnMobs(action.parameters(), instance);
             default -> plugin.getLogger().warning("Unknown event action type: " + action.type());
         }
     }
@@ -167,12 +170,23 @@ public final class EventActionExecutor {
         int perPlayerCap = getInt(params, "per_player_cap", 5);
         int minDistance = getInt(params, "min_distance", 16);
         int maxDistance = getInt(params, "max_distance", 48);
+        int globalCap = getInt(params, "global_cap", -1);
+
+        if (globalCap > 0) {
+            int existing = MobTracker.getInstance().countGlobalMobs(mobId);
+            if (existing >= globalCap) {
+                return;
+            }
+        }
 
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
         int spawnedTotal = 0;
         for (Player player : players) {
             int spawnedForPlayer = 0;
             for (int i = 0; i < count && spawnedForPlayer < perPlayerCap; i++) {
+                if (globalCap > 0 && spawnedTotal >= globalCap) {
+                    break;
+                }
                 Location point = selectSpawnPoint(player.getLocation(), minDistance, maxDistance);
                 if (point == null) {
                     continue;
@@ -184,6 +198,9 @@ public final class EventActionExecutor {
                 LevelSystem.applyLevel(entity, 1, template);
                 spawnedForPlayer++;
                 spawnedTotal++;
+            }
+            if (globalCap > 0 && spawnedTotal >= globalCap) {
+                break;
             }
         }
         plugin.getLogger().fine("Event chain spawned " + spawnedTotal + " " + mobId);
@@ -272,6 +289,68 @@ public final class EventActionExecutor {
         Player initiator = instance.getInitiator();
         if (initiator != null) {
             Bukkit.dispatchCommand(initiator, substituteVariables(command, instance));
+        }
+    }
+
+    private void executeKillMobs(Map<String, Object> params, EventChainInstance instance) {
+        removeMobs(params, instance, true);
+    }
+
+    private void executeDespawnMobs(Map<String, Object> params, EventChainInstance instance) {
+        removeMobs(params, instance, false);
+    }
+
+    private void removeMobs(Map<String, Object> params, EventChainInstance instance, boolean kill) {
+        String mobTemplateId = getString(params, "mob_template");
+        String faction = getString(params, "faction");
+        double radius = getDouble(params, "radius", -1.0);
+        int limit = getInt(params, "limit", -1);
+
+        Location center = null;
+        if (radius > 0) {
+            center = resolveCenter(params, instance);
+        }
+
+        World world = resolveWorld(params, instance);
+
+        List<LivingEntity> targets = new ArrayList<>();
+        MobTracker tracker = MobTracker.getInstance();
+        for (LivingEntity entity : tracker.getTrackedMobs()) {
+            if (entity.isDead()) {
+                continue;
+            }
+            if (world != null && !world.equals(entity.getWorld())) {
+                continue;
+            }
+            if (center != null && !center.getWorld().equals(entity.getWorld())) {
+                continue;
+            }
+            if (center != null && center.distanceSquared(entity.getLocation()) > radius * radius) {
+                continue;
+            }
+            CustomMobTemplate template = tracker.getTemplate(entity);
+            if (mobTemplateId != null && !mobTemplateId.isBlank()) {
+                if (template == null || !template.getId().equalsIgnoreCase(mobTemplateId)) {
+                    continue;
+                }
+            }
+            if (faction != null && !faction.isBlank()) {
+                if (template == null || !faction.equalsIgnoreCase(template.getFaction())) {
+                    continue;
+                }
+            }
+            targets.add(entity);
+            if (limit > 0 && targets.size() >= limit) {
+                break;
+            }
+        }
+
+        for (LivingEntity entity : targets) {
+            if (kill) {
+                entity.setHealth(0.0);
+            } else {
+                entity.remove();
+            }
         }
     }
 

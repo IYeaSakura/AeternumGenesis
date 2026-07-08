@@ -7,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -48,10 +50,11 @@ public class AoeEffect extends AbstractSkillEffect {
             }
             if (heal > 0) {
                 double amount = heal;
+                double maxHealth = getMaxHealth(entity);
                 if (healPercent > 0) {
-                    amount += entity.getMaxHealth() * (healPercent / 100.0);
+                    amount += maxHealth * (healPercent / 100.0);
                 }
-                entity.setHealth(Math.min(entity.getMaxHealth(), entity.getHealth() + amount));
+                entity.setHealth(Math.min(maxHealth, entity.getHealth() + amount));
             }
             if (knockback > 0 && entity.getLocation().getWorld().equals(world)) {
                 Vector kb = entity.getLocation().toVector().subtract(center.toVector()).normalize();
@@ -99,6 +102,11 @@ public class AoeEffect extends AbstractSkillEffect {
             boolean icon = ConfigParseUtil.toBoolean(map.get("show_icon"), true);
             entity.addPotionEffect(new PotionEffect(type, Math.max(1, duration), Math.max(0, amplifier), false, particles, icon));
         }
+    }
+
+    private double getMaxHealth(LivingEntity entity) {
+        AttributeInstance instance = entity.getAttribute(Attribute.MAX_HEALTH);
+        return instance != null ? instance.getValue() : entity.getHealth();
     }
 
     private void spawnParticles(Location center) {

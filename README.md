@@ -634,6 +634,48 @@ Event-chain conditions support comparisons, logical operators, time keywords and
 
 Use blank or omitted `condition` to make a stage always run.
 
+**Repeating stages**
+
+Add `repeat_interval` (in ticks or duration strings like `5s`) and optionally `repeat_count` to a stage to make it run repeatedly instead of advancing immediately. Use `repeat_count: -1` for infinite repeats until the event ends.
+
+```yaml
+refresh:
+  delay: 100
+  repeat_interval: 100
+  repeat_count: -1
+  condition: "mob_count_in_radius(100) < 80"
+  actions:
+    spawn:
+      type: spawn_around_players
+      mob: blood_zombie
+      count: 3
+      global_cap: 80
+```
+
+**Event chain action reference**
+
+| Action | Description |
+|--------|-------------|
+| `broadcast` | Send a message to all online players. |
+| `title_all` / `play_sound_all` | Show a title or play a sound for everyone. |
+| `apply_atmosphere` / `remove_atmosphere` | Apply or remove a regional atmosphere. |
+| `spawn_around_players` | Spawn custom mobs around each online player. Supports `global_cap`. |
+| `spawn_boss` | Spawn a single boss and register it with a key for end conditions. |
+| `reward_all` / `punish_all` | Give items or potion effects to all players. |
+| `command_console` / `command_player` | Execute a command as console or the initiator. |
+| `kill_mobs` / `despawn_mobs` | Kill or remove tracked custom mobs by `mob_template`, `faction`, `radius`, `world`, `limit`. |
+
+**Trigger reference**
+
+| Field | Description |
+|-------|-------------|
+| `type` | `manual`, `random_night`, `random_day`, `time`. |
+| `chance` | Probability (0.0-1.0) for random triggers. |
+| `cooldown` | Cooldown before the event can trigger again. |
+| `cooldown_group` | Shared cooldown group. Only one event in the group can trigger per cooldown window. |
+| `min_players` | Minimum online players required. |
+| `time_start` / `time_end` | For `time` trigger, valid time range in ticks. |
+
 ### Explosion Terrain Control
 
 Disable all mob explosion block damage globally in `plugins/AeternumGenesis/config.yml`:

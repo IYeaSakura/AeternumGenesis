@@ -31,12 +31,18 @@ public final class CustomItemTemplate {
     private final String blockId;
     private final boolean unbreakable;
     private final List<String> itemFlags;
+    private final Integer maxStackSize;
+    private final boolean consumable;
+    private final org.bukkit.Color potionColor;
+    private final List<ItemUseAction> useActions;
 
     public CustomItemTemplate(String id, Material material, String name, List<String> lore, int amount,
                               Integer customModelData, boolean glow, Map<Enchantment, Integer> enchantments,
                               boolean hideEnchants, List<ItemAttribute> attributes,
                               List<ItemPassiveEffect> passiveEffects, List<ItemAttackEffect> attackEffects,
-                              String setId, String blockId, boolean unbreakable, List<String> itemFlags) {
+                              String setId, String blockId, boolean unbreakable, List<String> itemFlags,
+                              Integer maxStackSize, boolean consumable, org.bukkit.Color potionColor,
+                              List<ItemUseAction> useActions) {
         this.id = id;
         this.material = material;
         this.name = name;
@@ -53,6 +59,10 @@ public final class CustomItemTemplate {
         this.blockId = blockId;
         this.unbreakable = unbreakable;
         this.itemFlags = itemFlags == null ? List.of() : List.copyOf(itemFlags);
+        this.maxStackSize = maxStackSize;
+        this.consumable = consumable;
+        this.potionColor = potionColor;
+        this.useActions = useActions == null ? List.of() : List.copyOf(useActions);
     }
 
     public String getId() {
@@ -119,6 +129,22 @@ public final class CustomItemTemplate {
         return itemFlags;
     }
 
+    public Integer getMaxStackSize() {
+        return maxStackSize;
+    }
+
+    public boolean isConsumable() {
+        return consumable;
+    }
+
+    public org.bukkit.Color getPotionColor() {
+        return potionColor;
+    }
+
+    public List<ItemUseAction> getUseActions() {
+        return useActions;
+    }
+
     public enum TriggerType {
         HOLD, WEAR, BOTH
     }
@@ -129,6 +155,13 @@ public final class CustomItemTemplate {
 
     public enum TargetType {
         VICTIM, SELF, AREA
+    }
+
+    /**
+     * Represents a single action executed when a player uses an item.
+     */
+    public record ItemUseAction(String type, Map<String, Object> parameters, boolean requireShift,
+                                 boolean requireRightClick, boolean requireLeftClick) {
     }
 
     /**

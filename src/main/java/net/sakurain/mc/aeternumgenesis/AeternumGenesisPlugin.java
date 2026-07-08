@@ -7,6 +7,7 @@ import net.sakurain.mc.aeternumgenesis.command.GenesisCommand;
 import net.sakurain.mc.aeternumgenesis.config.ConfigManager;
 import net.sakurain.mc.aeternumgenesis.item.CustomItemManager;
 import net.sakurain.mc.aeternumgenesis.spawn.EcosystemManager;
+import net.sakurain.mc.aeternumgenesis.item.ItemUseListener;
 import net.sakurain.mc.aeternumgenesis.item.effect.ItemEffectHandler;
 import net.sakurain.mc.aeternumgenesis.item.set.ItemSetManager;
 import net.sakurain.mc.aeternumgenesis.listener.CreatureSpawnListener;
@@ -115,6 +116,7 @@ public class AeternumGenesisPlugin extends JavaPlugin {
     private void registerListeners() {
         this.itemEffectHandler = new ItemEffectHandler(this);
         getServer().getPluginManager().registerEvents(itemEffectHandler, this);
+        getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new EntityEventListener(), this);
         getServer().getPluginManager().registerEvents(new SkillTriggerListener(), this);
         getServer().getPluginManager().registerEvents(new CreatureSpawnListener(), this);

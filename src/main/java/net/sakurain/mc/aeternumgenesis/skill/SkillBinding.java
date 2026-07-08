@@ -5,12 +5,17 @@ public record SkillBinding(
         String trigger,
         double chance,
         double cooldownOverride,
-        int level
+        int level,
+        int interval
 ) {
 
     public SkillBinding {
         if (skillId == null) skillId = "";
         if (trigger == null) trigger = "";
+    }
+
+    public SkillBinding(String skillId, String trigger, double chance, double cooldownOverride, int level) {
+        this(skillId, trigger, chance, cooldownOverride, level, 0);
     }
 
     public static SkillBinding fromMap(java.util.Map<String, Object> map) {
@@ -19,7 +24,8 @@ public record SkillBinding(
         double chance = toDouble(map.get("chance"), 100.0);
         double cooldownOverride = toDouble(map.get("cooldown_override"), -1.0);
         int level = toInt(map.get("level"), 1);
-        return new SkillBinding(skillId, trigger, chance, cooldownOverride, level);
+        int interval = toInt(map.get("interval"), 0);
+        return new SkillBinding(skillId, trigger, chance, cooldownOverride, level, interval);
     }
 
     private static double toDouble(Object obj, double def) {

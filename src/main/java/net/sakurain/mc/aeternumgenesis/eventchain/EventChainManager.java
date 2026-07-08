@@ -188,7 +188,7 @@ public final class EventChainManager implements Listener {
             if (trigger.type() == EventChainTemplate.Trigger.Type.MANUAL) {
                 continue;
             }
-            if (!passesCooldown(template.id(), currentTick, trigger.cooldownTicks())) {
+            if (!passesCooldown(template.id(), trigger.cooldownGroup(), currentTick, trigger.cooldownTicks())) {
                 continue;
             }
             if (Bukkit.getOnlinePlayers().size() < trigger.minPlayers()) {
@@ -211,13 +211,25 @@ public final class EventChainManager implements Listener {
                 continue;
             }
             lastTriggerTicks.put(template.id(), currentTick);
+            if (trigger.cooldownGroup() != null && !trigger.cooldownGroup().isBlank()) {
+                lastTriggerTicks.put("group:" + trigger.cooldownGroup(), currentTick);
+            }
             startEvent(template.id(), null);
         }
     }
 
-    private boolean passesCooldown(String id, long currentTick, long cooldownTicks) {
+    private boolean passesCooldown(String id, String cooldownGroup, long currentTick, long cooldownTicks) {
         Long last = lastTriggerTicks.get(id);
-        return last == null || (currentTick - last) >= cooldownTicks;
+        if (last != null && (currentTick - last) < cooldownTicks) {
+            return false;
+        }
+        if (cooldownGroup != null && !cooldownGroup.isBlank()) {
+            Long groupLast = lastTriggerTicks.get("group:" + cooldownGroup);
+            if (groupLast != null && (currentTick - groupLast) < cooldownTicks) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isAnyWorldNight() {
@@ -290,7 +302,11 @@ public final class EventChainManager implements Listener {
         }
         EventChainTemplate.Stage stage = stages.get(nextIndex);
         instance.setCurrentStageIndex(nextIndex);
+        scheduleStageExecution(instance, stage, 1);
+    }
 
+    private void scheduleStageExecution(EventChainInstance instance, EventChainTemplate.Stage stage, int repeatIteration) {
+        long delay = repeatIteration == 1 ? stage.delayTicks() : stage.repeatInterval();
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -302,9 +318,13 @@ public final class EventChainManager implements Listener {
                     return;
                 }
                 actionExecutor.executeAll(stage.actions(), instance);
-                advanceStage(instance);
+                if (stage.repeatInterval() > 0 && (stage.repeatCount() < 0 || repeatIteration < stage.repeatCount())) {
+                    scheduleStageExecution(instance, stage, repeatIteration + 1);
+                } else {
+                    advanceStage(instance);
+                }
             }
-        }.runTaskLater(plugin, stage.delayTicks());
+        }.runTaskLater(plugin, delay);
     }
 
     private void finishEvent(EventChainInstance instance) {

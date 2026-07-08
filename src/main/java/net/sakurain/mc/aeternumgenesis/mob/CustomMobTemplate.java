@@ -48,6 +48,7 @@ public final class CustomMobTemplate {
     private final WaterBehaviorConfig waterBehavior;
     private final ImmunitiesConfig immunities;
     private final BreakDoorConfig breakDoor;
+    private final boolean preventItemPickup;
     private final String faction;
     private final AIConfig ai;
     private final DropsConfig drops;
@@ -60,8 +61,8 @@ public final class CustomMobTemplate {
                              boolean baby, BossBarConfig bossbar, List<ParticleConfig> particles,
                              AmbientSoundConfig ambientSound, List<PotionEffectConfig> potionEffects,
                              SensesConfig senses, WaterBehaviorConfig waterBehavior, ImmunitiesConfig immunities,
-                             BreakDoorConfig breakDoor, String faction, AIConfig ai, DropsConfig drops,
-                             List<SkillBinding> skills, ExplosionConfig explosion) {
+                             BreakDoorConfig breakDoor, boolean preventItemPickup, String faction, AIConfig ai,
+                             DropsConfig drops, List<SkillBinding> skills, ExplosionConfig explosion) {
         this.id = id;
         this.type = type;
         this.displayName = displayName;
@@ -82,6 +83,7 @@ public final class CustomMobTemplate {
         this.waterBehavior = waterBehavior == null ? WaterBehaviorConfig.DEFAULT : waterBehavior;
         this.immunities = immunities == null ? ImmunitiesConfig.DEFAULT : immunities;
         this.breakDoor = breakDoor == null ? BreakDoorConfig.DEFAULT : breakDoor;
+        this.preventItemPickup = preventItemPickup;
         this.faction = faction == null ? "" : faction;
         this.ai = ai == null ? AIConfig.DEFAULT : ai;
         this.drops = drops == null ? DropsConfig.DEFAULT : drops;
@@ -169,6 +171,10 @@ public final class CustomMobTemplate {
         return breakDoor;
     }
 
+    public boolean isPreventItemPickup() {
+        return preventItemPickup;
+    }
+
     public AIConfig getAi() {
         return ai;
     }
@@ -218,6 +224,7 @@ public final class CustomMobTemplate {
         WaterBehaviorConfig waterBehavior = parseWaterBehavior(config.getConfigurationSection("water_behavior"));
         ImmunitiesConfig immunities = parseImmunities(config.getConfigurationSection("immunities"));
         BreakDoorConfig breakDoor = parseBreakDoor(config.getConfigurationSection("break_door"));
+        boolean preventItemPickup = config.getBoolean("prevent_item_pickup", false);
         String faction = config.getString("faction");
         AIConfig ai = parseAI(config.getConfigurationSection("ai"));
         DropsConfig drops = parseDrops(config.getConfigurationSection("drops"), id);
@@ -226,8 +233,8 @@ public final class CustomMobTemplate {
 
         return new CustomMobTemplate(id, type, displayName, health, maxHealth, attributes, equipment,
                 equipmentEffects, glowing, glowingColor, size, baby, bossbar, particles, ambientSound,
-                potionEffects, senses, waterBehavior, immunities, breakDoor, faction, ai, drops, skills,
-                explosion);
+                potionEffects, senses, waterBehavior, immunities, breakDoor, preventItemPickup, faction, ai,
+                drops, skills, explosion);
     }
 
     private static ExplosionConfig parseExplosion(ConfigurationSection section) {
@@ -638,7 +645,8 @@ public final class CustomMobTemplate {
             double chance = toDouble(map.get("chance"), 100.0);
             double cooldown = toDouble(map.get("cooldown"), -1.0);
             int level = toInt(map.get("level"), 1);
-            result.add(new SkillBinding(skillId, trigger, chance, cooldown, level));
+            int interval = toInt(map.get("interval"), 0);
+            result.add(new SkillBinding(skillId, trigger, chance, cooldown, level, interval));
         }
         return result;
     }

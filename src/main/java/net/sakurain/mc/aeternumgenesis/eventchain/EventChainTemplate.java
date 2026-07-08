@@ -26,7 +26,8 @@ public record EventChainTemplate(
             int minPlayers,
             int timeStart,
             int timeEnd,
-            long checkIntervalTicks
+            long checkIntervalTicks,
+            String cooldownGroup
     ) {
         public enum Type {
             RANDOM_NIGHT,
@@ -40,7 +41,9 @@ public record EventChainTemplate(
             String id,
             long delayTicks,
             Condition condition,
-            List<Action> actions
+            List<Action> actions,
+            long repeatInterval,
+            int repeatCount
     ) {
     }
 
@@ -82,7 +85,7 @@ public record EventChainTemplate(
 
     private static Trigger parseTrigger(ConfigurationSection section) {
         if (section == null) {
-            return new Trigger(Trigger.Type.MANUAL, 0.0, 0, 0, -1, -1, 1200L);
+            return new Trigger(Trigger.Type.MANUAL, 0.0, 0, 0, -1, -1, 1200L, null);
         }
         Trigger.Type type;
         try {
@@ -96,7 +99,11 @@ public record EventChainTemplate(
         int timeStart = section.getInt("time_start", -1);
         int timeEnd = section.getInt("time_end", -1);
         long checkIntervalTicks = section.getLong("check_interval_ticks", 1200L);
-        return new Trigger(type, chance, cooldownTicks, minPlayers, timeStart, timeEnd, checkIntervalTicks);
+        String cooldownGroup = section.getString("cooldown_group");
+        if (cooldownGroup != null && cooldownGroup.isBlank()) {
+            cooldownGroup = null;
+        }
+        return new Trigger(type, chance, cooldownTicks, minPlayers, timeStart, timeEnd, checkIntervalTicks, cooldownGroup);
     }
 
     private static List<Stage> parseStages(ConfigurationSection section) {
@@ -113,7 +120,9 @@ public record EventChainTemplate(
             long delayTicks = stageSection.getLong("delay", 0);
             Condition condition = new Condition(stageSection.getString("condition"));
             List<Action> actions = parseActions(stageSection.getConfigurationSection("actions"));
-            result.add(new Stage(stageId, delayTicks, condition, actions));
+            long repeatInterval = parseDuration(stageSection.getString("repeat_interval", "0"));
+            int repeatCount = stageSection.getInt("repeat_count", -1);
+            result.add(new Stage(stageId, delayTicks, condition, actions, repeatInterval, repeatCount));
         }
         return result;
     }

@@ -1,6 +1,7 @@
 package net.sakurain.mc.aeternumgenesis.item;
 
 import net.sakurain.mc.aeternumgenesis.AeternumGenesisPlugin;
+import net.sakurain.mc.aeternumgenesis.util.ConfigParseUtil;
 import net.sakurain.mc.aeternumgenesis.util.TemplateIdUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -88,9 +89,14 @@ public final class CustomItemManager {
         String blockId = section.getString("block");
         boolean unbreakable = section.getBoolean("unbreakable", false);
         List<String> itemFlags = section.getStringList("item_flags");
+        Integer maxStackSize = section.contains("max_stack_size") ? section.getInt("max_stack_size") : null;
+        boolean consumable = section.getBoolean("consumable", false);
+        org.bukkit.Color potionColor = parseColor(section.getString("potion_color"));
+        List<CustomItemTemplate.ItemUseAction> useActions = parseUseActions(section.getMapList("use_actions"), id);
 
         return new CustomItemTemplate(id, material, name, lore, amount, customModelData, glow,
-                enchantments, hideEnchants, attributes, passiveEffects, attackEffects, setId, blockId, unbreakable, itemFlags);
+                enchantments, hideEnchants, attributes, passiveEffects, attackEffects, setId, blockId, unbreakable,
+                itemFlags, maxStackSize, consumable, potionColor, useActions);
     }
 
     private Material parseMaterial(String value) {
@@ -237,6 +243,60 @@ public final class CustomItemManager {
             List<CustomItemTemplate.EffectEntry> effects = ItemEffectParser.parseEffectEntries(
                     ItemEffectParser.getList(map, "effects"), itemId);
             result.add(new CustomItemTemplate.ItemAttackEffect(chance, target, effects));
+        }
+        return result;
+    }
+
+    private org.bukkit.Color parseColor(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String[] parts = value.split("[,; ]");
+        if (parts.length < 3) {
+            return null;
+        }
+        try {
+            int r = Integer.parseInt(parts[0].trim());
+            int g = Integer.parseInt(parts[1].trim());
+            int b = Integer.parseInt(parts[2].trim());
+            return org.bukkit.Color.fromRGB(
+                    Math.max(0, Math.min(255, r)),
+                    Math.max(0, Math.min(255, g)),
+                    Math.max(0, Math.min(255, b)));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<CustomItemTemplate.ItemUseAction> parseUseActions(List<?> list, String itemId) {
+        List<CustomItemTemplate.ItemUseAction> result = new ArrayList<>();
+        if (list == null) {
+            return result;
+        }
+        for (Object obj : list) {
+            if (!(obj instanceof Map<?, ?> raw)) {
+                continue;
+            }
+            Map<String, Object> map = (Map<String, Object>) raw;
+            String type = ItemEffectParser.getString(map, "type");
+            if (type == null || type.isBlank()) {
+                continue;
+            }
+            Map<String, Object> parameters = new HashMap<>();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String key = entry.getKey();
+                if ("type".equals(key) || "require_shift".equals(key)
+                        || "require_right_click".equals(key) || "require_left_click".equals(key)) {
+                    continue;
+                }
+                parameters.put(key, entry.getValue());
+            }
+            boolean requireShift = ConfigParseUtil.toBoolean(map.get("require_shift"), false);
+            boolean requireRightClick = ConfigParseUtil.toBoolean(map.get("require_right_click"), true);
+            boolean requireLeftClick = ConfigParseUtil.toBoolean(map.get("require_left_click"), false);
+            result.add(new CustomItemTemplate.ItemUseAction(type.toLowerCase(Locale.ROOT),
+                    Map.copyOf(parameters), requireShift, requireRightClick, requireLeftClick));
         }
         return result;
     }
