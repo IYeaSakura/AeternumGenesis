@@ -6,6 +6,7 @@ import net.sakurain.mc.aeternumgenesis.api.event.CustomBlockBreakEvent;
 import net.sakurain.mc.aeternumgenesis.api.event.CustomBlockPlaceEvent;
 import net.sakurain.mc.aeternumgenesis.block.CustomBlockManager;
 import net.sakurain.mc.aeternumgenesis.block.CustomBlockTemplate;
+import net.sakurain.mc.aeternumgenesis.block.CustomBlockInteractExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -15,6 +16,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +61,34 @@ public class CustomBlockListener implements Listener {
         handleBreak(event.getBlock(), event.getPlayer(), event);
     }
 
-    private void handleBreak(@NotNull Block block, @Nullable Player player, @NotNull org.bukkit.event.Cancellable cancellable) {
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockDamage(BlockDamageEvent event) {
+        Location location = event.getBlock().getLocation();
+        CustomBlockManager manager = plugin.getBlockManager();
+        String templateId = manager.getBlockTemplateId(location);
+        if (templateId == null) {
+            return;
+        }
+        CustomBlockTemplate template = manager.getTemplate(templateId);
+        if (template == null) {
+            return;
+        }
+        if (template.getHardness() <= 1) {
+            return;
+        }
+        event.setCancelled(true);
+        if (manager.damageBlock(location, event.getPlayer())) {
+            handleBreak(event.getBlock(), event.getPlayer(), null);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockDamageAbort(BlockDamageAbortEvent event) {
+        plugin.getBlockManager().resetBlockDamage(event.getBlock().getLocation());
+        event.getPlayer().sendBlockDamage(event.getBlock().getLocation(), 0.0f);
+    }
+
+    private void handleBreak(@NotNull Block block, @Nullable Player player, @Nullable org.bukkit.event.Cancellable cancellable) {
         Location location = block.getLocation();
         CustomBlockManager manager = plugin.getBlockManager();
         String templateId = manager.getBlockTemplateId(location);
@@ -68,22 +97,50 @@ public class CustomBlockListener implements Listener {
         }
         CustomBlockTemplate template = manager.getTemplate(templateId);
         if (template != null && player != null && !template.canBreak(player, player.getInventory().getItemInMainHand())) {
-            cancellable.setCancelled(true);
+            if (cancellable != null) {
+                cancellable.setCancelled(true);
+            }
             player.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(template.getDenyBreakMessage()));
             return;
         }
         CustomBlockBreakEvent breakEvent = new CustomBlockBreakEvent(location, templateId, player);
         Bukkit.getPluginManager().callEvent(breakEvent);
         if (breakEvent.isCancelled()) {
-            cancellable.setCancelled(true);
+            if (cancellable != null) {
+                cancellable.setCancelled(true);
+            }
             return;
         }
-        cancellable.setCancelled(true);
+        if (cancellable != null) {
+            cancellable.setCancelled(true);
+        }
         block.setType(org.bukkit.Material.AIR, true);
         manager.removeCustomBlock(location);
         if (breakEvent.isDropItems() && template != null) {
             manager.dropCustomDrops(location.add(0.5, 0.5, 0.5), template);
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!event.getAction().isRightClick()) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        CustomBlockManager manager = plugin.getBlockManager();
+        String templateId = manager.getBlockTemplateId(block.getLocation());
+        if (templateId == null) {
+            return;
+        }
+        CustomBlockTemplate template = manager.getTemplate(templateId);
+        if (template == null || !template.hasOnInteract()) {
+            return;
+        }
+        event.setCancelled(true);
+        CustomBlockInteractExecutor.execute(plugin, template, block.getLocation(), event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

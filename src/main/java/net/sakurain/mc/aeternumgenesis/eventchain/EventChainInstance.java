@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Runtime state of an active event chain.
  */
-public final class EventChainInstance {
+public class EventChainInstance {
 
     private final UUID id;
     private final EventChainTemplate template;

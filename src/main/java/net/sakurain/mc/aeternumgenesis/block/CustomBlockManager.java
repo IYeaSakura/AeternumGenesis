@@ -8,11 +8,14 @@ import net.sakurain.mc.aeternumgenesis.util.TemplateIdUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +32,7 @@ public final class CustomBlockManager {
     private final Map<String, CustomBlockTemplate> templates = new ConcurrentHashMap<>();
     private final Map<String, String> blockLocations = new ConcurrentHashMap<>();
     private final Map<String, UUID> holograms = new ConcurrentHashMap<>();
+    private final Map<String, Integer> blockDamageHits = new ConcurrentHashMap<>();
     private final File storageFile;
 
     public CustomBlockManager(@NotNull AeternumGenesisPlugin plugin) {
@@ -163,7 +167,9 @@ public final class CustomBlockManager {
         if (template == null) {
             return false;
         }
-        location.getBlock().setType(template.getMaterial(), false);
+        Material placeMaterial = template.getDisguise() != null ? template.getDisguise().material() : template.getMaterial();
+        location.getBlock().setType(placeMaterial, false);
+        applyDisguiseState(location, template);
         blockLocations.put(locationKey(location), template.getId());
         spawnHologram(location, template);
         saveStorage();
@@ -174,12 +180,70 @@ public final class CustomBlockManager {
         if (location.getWorld() == null) {
             return false;
         }
-        boolean removed = blockLocations.remove(locationKey(location)) != null;
+        String key = locationKey(location);
+        boolean removed = blockLocations.remove(key) != null;
         if (removed) {
             removeHologram(location);
+            blockDamageHits.remove(key);
             saveStorage();
         }
         return removed;
+    }
+
+    /**
+     * Records a damage hit on a custom block. Returns true if the block should break.
+     */
+    public boolean damageBlock(@NotNull Location location, @NotNull Player player) {
+        String templateId = getBlockTemplateId(location);
+        if (templateId == null) {
+            return false;
+        }
+        CustomBlockTemplate template = getTemplate(templateId);
+        if (template == null) {
+            return false;
+        }
+        int hardness = template.getHardness();
+        if (hardness <= 1) {
+            return true;
+        }
+        String key = locationKey(location);
+        int hits = blockDamageHits.merge(key, 1, Integer::sum);
+        float progress = Math.min(1.0f, hits / (float) hardness);
+        player.sendBlockDamage(location, progress);
+        if (hits >= hardness) {
+            blockDamageHits.remove(key);
+            return true;
+        }
+        return false;
+    }
+
+    public void resetBlockDamage(@NotNull Location location) {
+        blockDamageHits.remove(locationKey(location));
+    }
+
+    private void applyDisguiseState(@NotNull Location location, @NotNull CustomBlockTemplate template) {
+        CustomBlockTemplate.DisguiseConfig disguise = template.getDisguise();
+        if (disguise == null) {
+            return;
+        }
+        BlockData data = location.getBlock().getBlockData();
+        if (data instanceof org.bukkit.block.data.type.NoteBlock noteBlock && disguise.instrument() != null) {
+            org.bukkit.Instrument instrument = parseInstrument(disguise.instrument());
+            if (instrument != null) {
+                noteBlock.setInstrument(instrument);
+            }
+            noteBlock.setNote(new org.bukkit.Note(disguise.note()));
+            location.getBlock().setBlockData(noteBlock, false);
+        }
+    }
+
+    @Nullable
+    private org.bukkit.Instrument parseInstrument(@NotNull String name) {
+        try {
+            return org.bukkit.Instrument.valueOf(name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public void clear() {
@@ -298,6 +362,11 @@ public final class CustomBlockManager {
     @NotNull
     private Component color(@NotNull String text) {
         return LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+    }
+
+    @NotNull
+    public Map<String, Integer> getBlockDamageHits() {
+        return Map.copyOf(blockDamageHits);
     }
 
     public void dropCustomDrops(@NotNull Location location, @Nullable CustomBlockTemplate template) {

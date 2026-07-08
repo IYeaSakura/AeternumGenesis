@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public final class CustomBlockTemplate {
 
@@ -25,6 +26,9 @@ public final class CustomBlockTemplate {
     private final String requiredBreakPermission;
     private final String denyBreakMessage;
     private final List<DropEntry> drops;
+    private final DisguiseConfig disguise;
+    private final int hardness;
+    private final List<InteractAction> onInteract;
 
     public CustomBlockTemplate(@NotNull AeternumGenesisPlugin plugin, @NotNull String id, @NotNull ConfigurationSection section) {
         this.plugin = plugin;
@@ -46,6 +50,9 @@ public final class CustomBlockTemplate {
             this.denyBreakMessage = "&cYou cannot break this block.";
         }
         this.drops = loadDrops(section.getConfigurationSection("drops"));
+        this.disguise = loadDisguise(section.getConfigurationSection("disguise"));
+        this.hardness = Math.max(0, section.getInt("hardness", 0));
+        this.onInteract = loadOnInteract(section.getConfigurationSection("on_interact"));
     }
 
     @NotNull
@@ -64,6 +71,41 @@ public final class CustomBlockTemplate {
                     itemSection.getString("amount", "1"),
                     itemSection.getDouble("chance", 100.0)
             ));
+        }
+        return result;
+    }
+
+    @Nullable
+    private DisguiseConfig loadDisguise(@Nullable ConfigurationSection section) {
+        if (section == null) {
+            return null;
+        }
+        Material material = Material.matchMaterial(section.getString("material", "STONE"));
+        if (material == null || !material.isBlock()) {
+            return null;
+        }
+        ConfigurationSection noteBlock = section.getConfigurationSection("note_block");
+        String instrument = noteBlock != null ? noteBlock.getString("instrument") : null;
+        int note = noteBlock != null ? noteBlock.getInt("note", 0) : 0;
+        return new DisguiseConfig(material, instrument, note);
+    }
+
+    @NotNull
+    private List<InteractAction> loadOnInteract(@Nullable ConfigurationSection section) {
+        if (section == null) {
+            return List.of();
+        }
+        List<InteractAction> result = new ArrayList<>();
+        for (String key : section.getKeys(false)) {
+            ConfigurationSection actionSection = section.getConfigurationSection(key);
+            if (actionSection == null) {
+                continue;
+            }
+            String type = actionSection.getString("type");
+            if (type == null) {
+                continue;
+            }
+            result.add(new InteractAction(type.toLowerCase(), actionSection.getValues(false)));
         }
         return result;
     }
@@ -135,6 +177,30 @@ public final class CustomBlockTemplate {
         return !drops.isEmpty();
     }
 
+    @Nullable
+    public DisguiseConfig getDisguise() {
+        return disguise;
+    }
+
+    public int getHardness() {
+        return hardness;
+    }
+
+    @NotNull
+    public List<InteractAction> getOnInteract() {
+        return Collections.unmodifiableList(onInteract);
+    }
+
+    public boolean hasOnInteract() {
+        return !onInteract.isEmpty();
+    }
+
     public record DropEntry(@NotNull String itemId, @NotNull String amount, double chance) {
+    }
+
+    public record DisguiseConfig(@NotNull Material material, @Nullable String instrument, int note) {
+    }
+
+    public record InteractAction(@NotNull String type, @NotNull Map<String, Object> parameters) {
     }
 }

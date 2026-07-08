@@ -22,12 +22,13 @@ A lightweight, YAML-driven custom mob and item plugin for **PaperMC 26.1.2**, in
 ### Custom Mobs
 - Create mobs based on any vanilla entity type with custom health, attributes, equipment, and scaling levels.
 - Add continuous particles, ambient sounds, BossBars, glow effects, and potion effects.
-- Configure immunities, water behavior, door breaking, and custom AI goals.
+- Configure immunities, water behavior, door breaking, custom AI goals, and explosion terrain damage.
 - Define drop tables that override or extend vanilla loot.
+- Globally or per-mob disable terrain destruction from explosions (e.g. Creepers).
 
 ### Skill System
 - Build reusable skill templates in YAML with cooldowns, conditions, and chained effects.
-- Use 20+ built-in effect types including damage, heal, potion, teleport, summon, particle, sound, lightning, explosion, ignite, knockback, message, title, actionbar, drop_item, execute_command, and delay.
+- Use 23+ built-in effect types including damage, heal, potion, teleport, summon, particle, sound, lightning, explosion, ignite, knockback, message, title, actionbar, drop_item, execute_command, delay, **dash**, **aoe**, and **atmosphere**.
 - Combine conditions with `and`, `or`, and `not` logic.
 - Bind skills to mobs with triggers such as on-spawn, on-hit, on-death, and timed intervals.
 
@@ -45,11 +46,13 @@ A lightweight, YAML-driven custom mob and item plugin for **PaperMC 26.1.2**, in
 - **Atmosphere Engine** — Apply layered regional atmospheres with weather, potion effects, particles, sounds, UI layers, entity modifiers, and environment rules.
 - **Ecosystems** — Bind custom mobs to biomes with weighted spawn rules, group sizes, density limits, ambient particles, and ambient sounds.
 - **World Rules** — Control global game rules, death behavior, PvP, and damage/hunger multipliers per world.
+- **Event Chains** — Orchestrate multi-stage world events with delayed actions, conditions, and success/failure branches.
 
 ### Operational Features
 - Hot-reload all YAML configs in-game with `/genesis reload`.
 - Zero NMS dependency, built purely on Bukkit/Paper API for maximum compatibility.
 - Persistent data storage via Bukkit PersistentDataContainer.
+- Unit-tested core utilities and parsers with JUnit 5.
 
 ---
 
@@ -105,7 +108,8 @@ AeternumGenesis/
 │   ├── ai/                                          # Custom AI goals
 │   ├── util/                                        # Utility classes
 │   ├── atmosphere/                                  # Atmosphere engine
-│   └── world/                                       # World rule manager
+│   ├── world/                                       # World rule manager
+│   └── eventchain/                                  # Dynamic event chain system
 ├── src/main/resources/                              # Default configuration templates
 │   ├── plugin.yml                                   # Plugin descriptor
 │   ├── config.yml                                   # Main configuration
@@ -117,7 +121,9 @@ AeternumGenesis/
 │   ├── blocks/example_blocks.yml                    # Example custom blocks
 │   ├── atmospheres/example_atmosphere.yml           # Example atmosphere
 │   ├── ecosystems/example_ecosystem.yml             # Example ecosystem
-│   └── worlds/world_rules.yml                       # Example world rules
+│   ├── worlds/world_rules.yml                       # Example world rules
+│   └── events/blood_moon.yml                        # Example event chain
+├── src/test/java/                                   # Unit tests (JUnit 5)
 ├── test/                                            # Test server configuration templates
 ├── examples/rpg-integration/                        # Example external plugin
 ├── .doc/                                            # Internal documentation and skills
@@ -181,6 +187,16 @@ npm install
 | `mvn clean package -DskipTests` | Build without running tests |
 | `mvn clean verify` | Build and run quality checks |
 | `npm install` | Install Node tooling for documentation |
+
+### Testing
+
+Run the JUnit 5 test suite with:
+
+```bash
+mvn test
+```
+
+Tests cover pure-logic components such as configuration parsers, duration parsing, ID validation, color parsing, and event-chain condition evaluation. Bukkit-dependent integration tests require a running Paper server or a compatible MockBukkit build for Paper 26.1.
 
 ### Code Style
 
@@ -511,6 +527,58 @@ world_rules:
     fire_damage_multiplier: 1.0
 ```
 
+### Event Chain
+
+Create `plugins/AeternumGenesis/events/blood_moon.yml`:
+
+```yaml
+blood_moon:
+  trigger:
+    type: random_night
+    chance: 0.05
+    cooldown: 3d
+  stages:
+    warning:
+      delay: 0
+      actions:
+        broadcast:
+          type: broadcast
+          message: "&c&lThe blood moon is rising..."
+    spawn_wave:
+      delay: 600
+      actions:
+        spawn:
+          type: spawn_around_players
+          mob: blood_zombie
+          count: 20
+          radius: 50
+  on_end:
+    condition: boss_defeated
+    success_actions:
+      reward:
+        type: reward_all
+        item: blood_bottle
+        amount: 1
+```
+
+### Explosion Terrain Control
+
+Disable all mob explosion block damage globally in `plugins/AeternumGenesis/config.yml`:
+
+```yaml
+explosions:
+  disable-mob-terrain-damage: true
+```
+
+Or configure per mob in `plugins/AeternumGenesis/mobs/*.yml`:
+
+```yaml
+ash_creeper:
+  type: CREEPER
+  explosion:
+    destroy_terrain: false
+```
+
 ---
 
 ## Commands & Permissions
@@ -524,6 +592,8 @@ world_rules:
 | `/genesis spawn <mob-id> [player\|x y z] [level]` | `genesis.spawn` | Spawn a custom mob |
 | `/genesis reload` | `genesis.reload` | Reload all configs |
 | `/genesis list <items\|mobs\|skills\|spawns> [page]` | `genesis.list` | List loaded templates |
+| `/genesis atmosphere <apply\|remove\|list\|active>` | `genesis.admin` | Manage active atmospheres |
+| `/genesis event <start\|stop\|list\|templates\|info>` | `genesis.admin` | Manage event chains |
 
 ### Permission Nodes
 

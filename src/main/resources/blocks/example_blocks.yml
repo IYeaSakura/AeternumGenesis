@@ -11,3 +11,41 @@ example_custom_block:
       item: STONE
       amount: "1"
       chance: 100
+
+reinforced_obsidian:
+  material: OBSIDIAN
+  display_name: "&5Reinforced Obsidian"
+  # Number of hits required to break. 0 or 1 = instant break.
+  hardness: 5
+  break_requirements:
+    allowed_items:
+      - DIAMOND_PICKAXE
+      - NETHERITE_PICKAXE
+  drops:
+    itself:
+      item: genesis:reinforced_obsidian
+      amount: "1"
+      chance: 100
+
+mystic_note_block:
+  material: NOTE_BLOCK
+  display_name: "&dMystic Note Block"
+  disguise:
+    material: NOTE_BLOCK
+    note_block:
+      instrument: BASS_DRUM
+      note: 12
+  hardness: 2
+  on_interact:
+    play_sound:
+      type: play_sound
+      sound: BLOCK_NOTE_BLOCK_BASS
+      volume: 1.0
+      pitch: 1.0
+    spawn_particles:
+      type: spawn_particle
+      particle: NOTE
+      count: 10
+      offset_x: 0.5
+      offset_y: 0.5
+      offset_z: 0.5

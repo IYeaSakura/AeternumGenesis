@@ -22,12 +22,13 @@
 ### 自定义怪物
 - 基于任意原版实体类型创建怪物，支持自定义生命值、属性、装备和等级缩放。
 - 添加持续粒子、环境音效、BossBar、发光效果和药水效果。
-- 配置免疫、水中行为、破门行为和自定义 AI 目标。
+- 配置免疫、水中行为、破门行为、自定义 AI 目标和爆炸地形破坏。
 - 定义覆盖或扩展原版战利品的掉落表。
+- 全局或按怪物禁用爆炸类生物（如苦力怕）对方块的破坏。
 
 ### 技能系统
 - 通过 YAML 构建可复用的技能模板，包含冷却、条件与链式效果。
-- 使用 20 余种内置效果类型：伤害、百分比伤害、治疗、百分比治疗、药水、清除药水、传送、召唤、粒子、音效、闪电、爆炸、点燃、灭火、击退、消息、标题、ActionBar、掉落物品、执行命令和延迟。
+- 使用 23 余种内置效果类型：伤害、百分比伤害、治疗、百分比治疗、药水、清除药水、传送、召唤、粒子、音效、闪电、爆炸、点燃、灭火、击退、消息、标题、ActionBar、掉落物品、执行命令、延迟、**突进**、**范围效果**和**氛围领域**。
 - 使用 `and`、`or`、`not` 组合条件。
 - 将技能绑定到怪物，支持出生时、命中时、死亡时和定时触发等触发器。
 
@@ -45,11 +46,13 @@
 - **氛围引擎** —— 应用分层的区域化氛围，包含天气、药水效果、粒子、音效、UI 层、实体修饰与环境规则。
 - **生态系统** —— 按生物群系绑定自定义怪物，支持权重化生成规则、群体大小、密度限制、环境粒子与环境音效。
 - **世界规则** —— 按世界控制全局游戏规则、死亡行为、PVP、伤害与饥饿倍率。
+- **事件链** —— 编排多阶段世界事件，支持延迟动作、条件判断与成功/失败分支。
 
 ### 运维特性
 - 通过 `/genesis reload` 在游戏内热重载所有 YAML 配置。
 - 零 NMS 依赖，完全基于 Bukkit/Paper API 构建，兼容性最佳。
 - 通过 Bukkit PersistentDataContainer 持久化存储数据。
+- 核心工具类与解析器使用 JUnit 5 进行单元测试。
 
 ---
 
@@ -105,7 +108,8 @@ AeternumGenesis/
 │   ├── ai/                                          # 自定义 AI 目标
 │   ├── util/                                        # 工具类
 │   ├── atmosphere/                                  # 氛围引擎
-│   └── world/                                       # 世界规则管理器
+│   ├── world/                                       # 世界规则管理器
+│   └── eventchain/                                  # 动态事件链系统
 ├── src/main/resources/                              # 默认配置模板
 │   ├── plugin.yml                                   # 插件描述文件
 │   ├── config.yml                                   # 主配置
@@ -117,7 +121,9 @@ AeternumGenesis/
 │   ├── blocks/example_blocks.yml                    # 自定义方块示例
 │   ├── atmospheres/example_atmosphere.yml           # 氛围示例
 │   ├── ecosystems/example_ecosystem.yml             # 生态示例
-│   └── worlds/world_rules.yml                       # 世界规则示例
+│   ├── worlds/world_rules.yml                       # 世界规则示例
+│   └── events/blood_moon.yml                        # 事件链示例
+├── src/test/java/                                   # 单元测试（JUnit 5）
 ├── test/                                            # 测试服配置模板
 ├── examples/rpg-integration/                        # 外部插件示例
 ├── .doc/                                            # 内部文档与技能说明
@@ -181,6 +187,16 @@ npm install
 | `mvn clean package -DskipTests` | 跳过测试构建 |
 | `mvn clean verify` | 构建并运行质量检查 |
 | `npm install` | 安装文档工具依赖 |
+
+### 测试
+
+运行 JUnit 5 测试套件：
+
+```bash
+mvn test
+```
+
+测试覆盖纯逻辑组件，包括配置解析器、持续时间解析、ID 校验、颜色解析和事件链条件求值。依赖 Bukkit 的集成测试需要运行中的 Paper 服务端，或兼容 Paper 26.1 的 MockBukkit 构建。
 
 ### 代码风格
 
@@ -511,6 +527,58 @@ world_rules:
     fire_damage_multiplier: 1.0
 ```
 
+### 事件链
+
+创建 `plugins/AeternumGenesis/events/blood_moon.yml`：
+
+```yaml
+blood_moon:
+  trigger:
+    type: random_night
+    chance: 0.05
+    cooldown: 3d
+  stages:
+    warning:
+      delay: 0
+      actions:
+        broadcast:
+          type: broadcast
+          message: "&c&l血月正在升起..."
+    spawn_wave:
+      delay: 600
+      actions:
+        spawn:
+          type: spawn_around_players
+          mob: blood_zombie
+          count: 20
+          radius: 50
+  on_end:
+    condition: boss_defeated
+    success_actions:
+      reward:
+        type: reward_all
+        item: blood_bottle
+        amount: 1
+```
+
+### 爆炸地形控制
+
+在 `plugins/AeternumGenesis/config.yml` 中全局禁用所有怪物爆炸破坏方块：
+
+```yaml
+explosions:
+  disable-mob-terrain-damage: true
+```
+
+或在 `plugins/AeternumGenesis/mobs/*.yml` 中按怪物配置：
+
+```yaml
+ash_creeper:
+  type: CREEPER
+  explosion:
+    destroy_terrain: false
+```
+
 ---
 
 ## 命令与权限
@@ -524,6 +592,8 @@ world_rules:
 | `/genesis spawn <mob-id> [player\|x y z] [level]` | `genesis.spawn` | 生成自定义怪物 |
 | `/genesis reload` | `genesis.reload` | 重载所有配置 |
 | `/genesis list <items\|mobs\|skills\|spawns> [page]` | `genesis.list` | 列出已加载模板 |
+| `/genesis atmosphere <apply\|remove\|list\|active>` | `genesis.admin` | 管理活跃氛围 |
+| `/genesis event <start\|stop\|list\|templates\|info>` | `genesis.admin` | 管理事件链 |
 
 ### 权限节点
 
