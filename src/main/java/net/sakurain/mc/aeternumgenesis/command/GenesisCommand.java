@@ -21,6 +21,7 @@ public class GenesisCommand implements CommandExecutor, TabCompleter {
         subCommands.put("reload", new ReloadSubCommand());
         subCommands.put("list", new ListSubCommand());
         subCommands.put("atmosphere", new AtmosphereSubCommand());
+        subCommands.put("event", new EventSubCommand());
     }
 
     @Override

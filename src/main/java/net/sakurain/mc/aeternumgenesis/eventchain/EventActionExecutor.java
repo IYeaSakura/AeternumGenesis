@@ -3,8 +3,8 @@ package net.sakurain.mc.aeternumgenesis.eventchain;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.sakurain.mc.aeternumgenesis.AeternumGenesisPlugin;
-import net.sakurain.mc.aeternumgenesis.item.CustomItemManager;
 import net.sakurain.mc.aeternumgenesis.item.CustomItemTemplate;
+import net.sakurain.mc.aeternumgenesis.item.ItemBuilder;
 import net.sakurain.mc.aeternumgenesis.mob.CustomMobManager;
 import net.sakurain.mc.aeternumgenesis.mob.CustomMobTemplate;
 import net.sakurain.mc.aeternumgenesis.mob.LevelSystem;
@@ -221,13 +221,12 @@ public final class EventActionExecutor {
             return;
         }
         int amount = getInt(params, "amount", 1);
-        CustomItemManager itemManager = plugin.getItemManager();
-        CustomItemTemplate template = itemManager.getTemplate(itemId);
+        CustomItemTemplate template = plugin.getItemManager().getTemplate(itemId);
         if (template == null) {
             plugin.getLogger().warning("Event chain reward_all references unknown item: " + itemId);
             return;
         }
-        ItemStack stack = itemManager.buildItem(template, null);
+        ItemStack stack = ItemBuilder.build(template);
         if (stack == null) {
             return;
         }
@@ -365,6 +364,11 @@ public final class EventActionExecutor {
     private static String getString(Map<String, Object> params, String key) {
         Object value = params.get(key);
         return value == null ? null : value.toString();
+    }
+
+    private static String getString(Map<String, Object> params, String key, String def) {
+        Object value = params.get(key);
+        return value == null ? def : value.toString();
     }
 
     private static int getInt(Map<String, Object> params, String key, int def) {

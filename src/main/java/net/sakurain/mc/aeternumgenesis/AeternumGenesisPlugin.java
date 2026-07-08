@@ -22,6 +22,7 @@ import net.sakurain.mc.aeternumgenesis.world.WorldRuleManager;
 import net.sakurain.mc.aeternumgenesis.ai.AICombatListener;
 import net.sakurain.mc.aeternumgenesis.ai.CustomAIController;
 import net.sakurain.mc.aeternumgenesis.block.CustomBlockManager;
+import net.sakurain.mc.aeternumgenesis.eventchain.EventChainManager;
 import net.sakurain.mc.aeternumgenesis.listener.CustomBlockListener;
 import net.sakurain.mc.aeternumgenesis.listener.ProjectileHitListener;
 import org.bukkit.Bukkit;
@@ -43,6 +44,7 @@ public class AeternumGenesisPlugin extends JavaPlugin {
     private AtmosphereManager atmosphereManager;
     private EcosystemManager ecosystemManager;
     private WorldRuleManager worldRuleManager;
+    private EventChainManager eventChainManager;
     private AeternumGenesisAPIImpl api;
 
     @Override
@@ -67,6 +69,7 @@ public class AeternumGenesisPlugin extends JavaPlugin {
         this.atmosphereManager = new AtmosphereManager(configManager.getAtmosphereConfigs());
         this.ecosystemManager = new EcosystemManager(configManager.getEcosystemConfigs());
         this.worldRuleManager = new WorldRuleManager(configManager.getWorldRuleConfigs());
+        this.eventChainManager = new EventChainManager(configManager.getEventChainConfigs());
 
         registerListeners();
         registerCommands();
@@ -77,7 +80,8 @@ public class AeternumGenesisPlugin extends JavaPlugin {
                 + ", Skills: " + skillManager.getTemplateCount()
                 + ", SpawnRules: " + spawnManager.getRuleCount()
                 + ", Atmospheres: " + atmosphereManager.getTemplateCount()
-                + ", Ecosystems: " + ecosystemManager.getTemplateCount());
+                + ", Ecosystems: " + ecosystemManager.getTemplateCount()
+                + ", EventChains: " + eventChainManager.getTemplateCount());
     }
 
     @Override
@@ -101,6 +105,9 @@ public class AeternumGenesisPlugin extends JavaPlugin {
         }
         if (worldRuleManager != null) {
             worldRuleManager.shutdown();
+        }
+        if (eventChainManager != null) {
+            eventChainManager.shutdown();
         }
         instance = null;
     }
@@ -180,6 +187,10 @@ public class AeternumGenesisPlugin extends JavaPlugin {
 
     public WorldRuleManager getWorldRuleManager() {
         return worldRuleManager;
+    }
+
+    public EventChainManager getEventChainManager() {
+        return eventChainManager;
     }
 
     public AeternumGenesisAPI getAPI() {

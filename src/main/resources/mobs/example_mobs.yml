@@ -269,3 +269,64 @@ zombie_warrior:
     - trigger: ON_DEATH
       skill_id: warrior_death
       chance: 1.0
+
+blood_knight:
+  type: WITHER_SKELETON
+  display_name: "&4✦ &lBlood Knight"
+  health: 300
+  max_health: 300
+  attributes:
+    - type: ATTACK_DAMAGE
+      amount: 12.0
+      operation: ADD_NUMBER
+    - type: MOVEMENT_SPEED
+      amount: 0.08
+      operation: ADD_NUMBER
+    - type: FOLLOW_RANGE
+      amount: 32.0
+      operation: ADD_NUMBER
+    - type: KNOCKBACK_RESISTANCE
+      amount: 1.0
+      operation: ADD_NUMBER
+  equipment:
+    helmet:
+      item: netherite_helmet
+      drop_chance: 0.0
+    chestplate:
+      item: netherite_chestplate
+      drop_chance: 0.0
+    leggings:
+      item: netherite_leggings
+      drop_chance: 0.0
+    boots:
+      item: netherite_boots
+      drop_chance: 0.0
+    main_hand:
+      item: netherite_sword
+      drop_chance: 0.1
+  glowing: true
+  glowing_color: DARK_RED
+  bossbar:
+    enabled: true
+    title: "&4✦ Blood Knight"
+    color: RED
+    style: NOTCHED_20
+    show_to_all: true
+    range: 128
+  particles:
+    - type: ASH
+      location: FEET
+      count: 5
+      offset_x: 0.5
+      offset_y: 0.1
+      offset_z: 0.5
+      interval: 10
+  immunities:
+    fire: true
+    projectile: false
+    melee: false
+    potion: false
+    sunlight: true
+    explosion: false
+    fall: true
+    drowning: false

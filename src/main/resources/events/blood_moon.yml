@@ -1,0 +1,101 @@
+# AeternumGenesis Example Event Chain
+# Place files in plugins/AeternumGenesis/events/ (supports subdirectories)
+
+blood_moon:
+  trigger:
+    type: "random_night"
+    chance: 0.05
+    cooldown: "3d"
+    min_players: 1
+
+  stages:
+    warning:
+      id: "warning"
+      delay: 0
+      actions:
+        broadcast_warning:
+          type: "broadcast"
+          message: "&c&lThe blood moon is rising... find shelter."
+        title_warning:
+          type: "title_all"
+          title: "&c&lBlood Moon"
+          subtitle: "&7Darkness consumes the land..."
+          fade_in: 10
+          stay: 70
+          fade_out: 10
+        sound_warning:
+          type: "play_sound_all"
+          sound: "ENTITY_ENDER_DRAGON_GROWL"
+          volume: 0.8
+
+    atmosphere_shift:
+      id: "atmosphere_shift"
+      delay: 100
+      actions:
+        apply_blood_moon_atmosphere:
+          type: "apply_atmosphere"
+          atmosphere_id: "blood_moon_active"
+          duration: "10m"
+          radius: 128.0
+          location: "highest_player"
+
+    spawn_wave_1:
+      id: "spawn_wave_1"
+      delay: 600
+      actions:
+        spawn_blood_zombies:
+          type: "spawn_around_players"
+          mob: "blood_zombie"
+          count: 20
+          radius: 50
+          per_player_cap: 5
+          min_distance: 24
+          max_distance: 64
+
+    spawn_boss:
+      id: "spawn_boss"
+      delay: 1200
+      condition: "player_count_online > 1"
+      actions:
+        spawn_blood_knight:
+          type: "spawn_boss"
+          mob: "blood_knight"
+          boss_key: "blood_knight"
+          location: "highest_player"
+          level: 5
+        broadcast_boss:
+          type: "broadcast"
+          message: "&4&lThe Blood Knight has descended!"
+        sound_boss:
+          type: "play_sound_all"
+          sound: "ENTITY_WITHER_SPAWN"
+          volume: 1.0
+
+  on_end:
+    condition: "boss_defeated"
+    timeout_ticks: 12000
+    success_actions:
+      reward_survivors:
+        type: "reward_all"
+        item: "blood_bottle"
+        amount: 1
+      announce_victory:
+        type: "broadcast"
+        message: "&aThe blood moon recedes and dawn breaks."
+      clear_atmosphere:
+        type: "remove_atmosphere"
+        atmosphere_id: "blood_moon_active"
+    fail_actions:
+      punish_survivors:
+        type: "punish_all"
+        effect: "WEAKNESS"
+        duration: "5m"
+        amplifier: 1
+        show_particles: false
+        show_icon: true
+      announce_defeat:
+        type: "broadcast"
+        message: "&cThe blood moon devoured the land..."
+      clear_atmosphere:
+        type: "remove_atmosphere"
+        atmosphere_id: "blood_moon_active"

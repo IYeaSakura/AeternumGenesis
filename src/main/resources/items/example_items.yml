@@ -145,3 +145,33 @@ admin_helmet:
   item_flags:
     - HIDE_ATTRIBUTES
     - HIDE_UNBREAKABLE
+
+blood_bottle:
+  material: POTION
+  name: "&c&lBlood Bottle"
+  lore:
+    - ""
+    - "&c❣ &7A vial of coagulated blood moon essence"
+    - "&c❣ &7Drink it to gain unnatural strength"
+    - ""
+    - "&c▶ &eRight-click to consume"
+  glow: true
+  consumable: true
+  use_effects:
+    - type: potion
+      target: SELF
+      potion_type: STRENGTH
+      duration: 1200
+      amplifier: 1
+    - type: potion
+      target: SELF
+      potion_type: REGENERATION
+      duration: 600
+      amplifier: 0
+    - type: particle
+      target: SELF
+      particle: WITCH
+      count: 20
+      offset_x: 0.5
+      offset_y: 0.5
+      offset_z: 0.5
