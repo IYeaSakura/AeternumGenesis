@@ -1,66 +1,143 @@
 # AeternumGenesis
 
-[![PaperMC](https://img.shields.io/badge/PaperMC-26.1.2-blue.svg)](https://papermc.io/)
-[![Java](https://img.shields.io/badge/Java-25%2B-orange.svg)](https://adoptium.net/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<div align="center">
 
-> A lightweight, YAML-driven custom mob and item plugin for **PaperMC 26.1.2**, inspired by MythicMobs. AeternumGenesis lets server owners create custom monsters, equipment, skills, spawn rules, and item sets — all without touching any code or NMS.
+[![PaperMC](https://img.shields.io/badge/PaperMC-26.1.2-000000?logo=paper-minecraft)](https://papermc.io/)
+[![Java](https://img.shields.io/badge/Java-25%2B-007396?logo=openjdk)](https://openjdk.org/)
+[![Maven](https://img.shields.io/badge/Maven-3.9%2B-C71A36?logo=apache-maven)](https://maven.apache.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
----
+</div>
 
-## Table of Contents
+A lightweight, YAML-driven custom mob and item plugin for **PaperMC 26.1.2**, inspired by MythicMobs. AeternumGenesis lets server owners create custom monsters, equipment, skills, spawn rules, and item sets without touching code or NMS.
 
-[Features](#features)
-[Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-  - [Custom Items](#custom-items)
-  - [Custom Mobs](#custom-mobs)
-  - [Skills](#skills)
-  - [Spawn Rules](#spawn-rules)
-  - [Item Sets](#item-sets)
-- [Commands & Permissions](#commands--permissions)
-- [API for Developers](#api-for-developers)
-- [Performance & Safety](#performance--safety)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
-- [Credits](#credits)
+[Features](#features) | [Tech Stack](#tech-stack) | [Project Structure](#project-structure) | [Getting Started](#getting-started) | [Development](#development) | [Build & Deployment](#build--deployment) | [Configuration Examples](#configuration-examples) | [Commands & Permissions](#commands--permissions) | [API Reference](#api-reference) | [Troubleshooting](#troubleshooting) | [Contributing](#contributing) | [License](#license) | [Acknowledgments](#acknowledgments) | [Contact](#contact)
 
 ---
 
 ## Features
 
-- **Custom Items** — Define weapons, armor, and tools with custom names, lore, enchantments, attributes, CustomModelData, glow, passive effects, attack effects, and set bonuses.
-- **Custom Mobs** — Create mobs based on vanilla entity types with custom health, attributes, equipment, particles, sounds, BossBars, immunities, AI behavior, and water behavior.
-- **Skill System** — YAML-driven skill engine with 20+ built-in effects, conditions, target selectors, cooldowns, and on-cooldown fallback skills.
-- **Natural Spawn Control** — REPLACE, ADD, and DENY spawn rules with time, weather, biome, light-level, Y-level, moon-phase, and density conditions.
-- **Item Sets** — Grant bonus effects when players equip a complete set of custom items.
-- **Public API** — Stable API with Bukkit events for other plugins to hook into, plus registry extensions for custom effects and conditions.
-- **Hot Reload** — Reload all configs in-game with `/genesis reload`.
-- **Zero NMS** — Built purely on Bukkit/Paper API for maximum compatibility and maintainability.
+### Custom Items
+- Define weapons, armor, and tools with custom names, lore, enchantments, attributes, CustomModelData, and glow effects.
+- Add passive effects triggered by holding or wearing items.
+- Configure attack effects that trigger on hit with chance-based probability.
+- Link items into item sets for powerful set bonuses.
+
+### Custom Mobs
+- Create mobs based on any vanilla entity type with custom health, attributes, equipment, and scaling levels.
+- Add continuous particles, ambient sounds, BossBars, glow effects, and potion effects.
+- Configure immunities, water behavior, door breaking, and custom AI goals.
+- Define drop tables that override or extend vanilla loot.
+
+### Skill System
+- Build reusable skill templates in YAML with cooldowns, conditions, and chained effects.
+- Use 20+ built-in effect types including damage, heal, potion, teleport, summon, particle, sound, lightning, explosion, ignite, knockback, message, title, actionbar, drop_item, execute_command, and delay.
+- Combine conditions with `and`, `or`, and `not` logic.
+- Bind skills to mobs with triggers such as on-spawn, on-hit, on-death, and timed intervals.
+
+### Natural Spawn Control
+- Use `REPLACE`, `ADD`, and `DENY` actions to control how custom mobs enter the world.
+- Apply conditions based on time of day, weather, biome, world, light level, Y-level, moon phase, block below, and random chance.
+- Enforce density limits to prevent overcrowding.
+
+### Public Developer API
+- Access item, mob, skill, spawn, set, block, and registry APIs through Bukkit's ServicesManager.
+- Listen to Bukkit events for custom item builds, mob spawns, mob deaths, skill execution, and more.
+- Register custom skill effects, skill conditions, and spawn conditions from external plugins.
+
+### Operational Features
+- Hot-reload all YAML configs in-game with `/genesis reload`.
+- Zero NMS dependency, built purely on Bukkit/Paper API for maximum compatibility.
+- Persistent data storage via Bukkit PersistentDataContainer.
 
 ---
 
-## Requirements
+## Tech Stack
 
-| Component | Version |
-|-----------|---------|
-| Server    | PaperMC **26.1.2** |
-| Java      | **25** or newer |
-| Build     | Maven 3.9+ |
+### Core Technologies
 
-> ⚠️ PaperMC 26.1.2 corresponds to Minecraft Java 26.1.2 (Mojang's year-based versioning). Java 21 and lower will **not** work.
+| Category | Technology | Version |
+|----------|------------|---------|
+| Server Platform | PaperMC | 26.1.2 |
+| Language | Java | 25+ |
+| Build Tool | Maven | 3.9+ |
+| API | Bukkit/Paper API | 26.1.2 |
+
+### Additional Libraries
+
+- **Adventure API**: Component-based chat and text serialization.
+- **js-yaml**: Used by documentation tooling for YAML validation examples.
 
 ---
 
-## Installation
+## Project Structure
 
-1. Download the latest `AeternumGenesis-*.jar` from [Releases](../../releases).
-2. Place the jar in your server's `plugins/` folder.
-3. Start the server once to generate the default config folders.
-4. Edit the YAML files in `plugins/AeternumGenesis/` to customize items, mobs, skills, spawns, and sets.
-5. Run `/genesis reload` or restart the server.
+```
+AeternumGenesis/
+├── src/main/java/net/sakurain/mc/aeternumgenesis/   # Main plugin source
+│   ├── AeternumGenesisPlugin.java                   # Plugin entry point
+│   ├── api/                                         # Public API interfaces and events
+│   │   ├── AeternumGenesisAPI.java                  # Central API accessor
+│   │   ├── ItemAPI.java                             # Item query/build API
+│   │   ├── MobAPI.java                              # Mob spawn/query API
+│   │   ├── SkillAPI.java                            # Skill registration API
+│   │   ├── SpawnAPI.java                            # Spawn rule API
+│   │   ├── SetAPI.java                              # Item set API
+│   │   ├── BlockAPI.java                            # Custom block API
+│   │   ├── RegistryAPI.java                         # Effect/condition registry API
+│   │   ├── event/                                   # Bukkit events
+│   │   ├── exception/                               # Custom exceptions
+│   │   └── impl/                                    # API implementations
+│   ├── command/                                     # Command executor and subcommands
+│   ├── config/                                      # Configuration loading and caching
+│   ├── item/                                        # Custom item system
+│   ├── item/set/                                    # Item set system
+│   ├── item/effect/                                 # Passive and attack effect handlers
+│   ├── mob/                                         # Custom mob system
+│   ├── skill/                                       # Skill engine
+│   ├── skill/effect/                                # Built-in skill effects
+│   ├── skill/condition/                             # Built-in skill conditions
+│   ├── spawn/                                       # Natural spawn control
+│   ├── spawn/condition/                             # Built-in spawn conditions
+│   ├── block/                                       # Custom block system
+│   ├── listener/                                    # Event listeners
+│   ├── ai/                                          # Custom AI goals
+│   └── util/                                        # Utility classes
+├── src/main/resources/                              # Default configuration templates
+│   ├── plugin.yml                                   # Plugin descriptor
+│   ├── config.yml                                   # Main configuration
+│   ├── items/example_items.yml                      # Example item templates
+│   ├── mobs/example_mobs.yml                        # Example mob templates
+│   ├── skills/example_skills.yml                    # Example skill templates
+│   ├── spawns/example_spawns.yml                    # Example spawn rules
+│   ├── sets/example_set.yml                         # Example item set
+│   └── blocks/example_blocks.yml                    # Example custom blocks
+├── test/                                            # Test server configuration templates
+├── examples/rpg-integration/                        # Example external plugin
+├── .doc/                                            # Internal documentation and skills
+├── pom.xml                                          # Maven build configuration
+├── package.json                                     # Node tooling for docs
+├── README.md                                        # English documentation
+└── README_zh.md                                     # Chinese documentation
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Server**: PaperMC 26.1.2 or compatible build.
+- **Java**: 25 or newer. Java 21 and lower will fail with `UnsupportedClassVersionError`.
+- **Build Tool**: Maven 3.9 or newer if building from source.
+
+### Installation
+
+1. Download the latest `AeternumGenesis-*.jar` from the [Releases](../../releases) page.
+2. Place the JAR file in your server's `plugins/` directory.
+3. Start the server once to generate the default configuration folder.
+4. Edit the YAML files in `plugins/AeternumGenesis/` to customize content.
+5. Run `/genesis reload` in-game or restart the server.
 
 ### Building from Source
 
@@ -69,18 +146,184 @@
 git clone https://github.com/IYeaSakura/AeternumGenesis.git
 cd AeternumGenesis
 
-# Build with Maven
-mvn clean package
+# Build the plugin JAR
+mvn clean package -DskipTests
 
-# Output:
+# The output artifact is located at:
 # target/AeternumGenesis-1.0.0-SNAPSHOT.jar
+```
+
+### Environment Variables
+
+AeternumGenesis does not require environment variables for normal server operation. All behavior is controlled through YAML files under `plugins/AeternumGenesis/`.
+
+For documentation tooling, Node.js dependencies can be installed with:
+
+```bash
+npm install
 ```
 
 ---
 
-## Quick Start
+## Development
 
-### 1. Create a Custom Item
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `mvn clean package` | Build the plugin JAR |
+| `mvn clean package -DskipTests` | Build without running tests |
+| `mvn clean verify` | Build and run quality checks |
+| `npm install` | Install Node tooling for documentation |
+
+### Code Style
+
+#### Naming Conventions
+
+| Item | Convention | Example |
+|------|------------|---------|
+| Classes | PascalCase | `AeternumGenesisPlugin.java`, `CustomMobManager.java` |
+| Methods | camelCase | `spawnMob`, `registerTemplate` |
+| Variables | camelCase | `templateId`, `itemStack` |
+| Constants | SCREAMING_SNAKE_CASE | `ITEM_ID_KEY`, `DEFAULT_COOLDOWN` |
+| Packages | lowercase | `net.sakurain.mc.aeternumgenesis.mob` |
+
+#### Architecture Patterns
+
+- **Plugin Entry**: `AeternumGenesisPlugin` initializes managers, registers listeners, commands, and the public API service.
+- **Managers**: Each subsystem (`CustomItemManager`, `CustomMobManager`, `SkillManager`, `SpawnManager`) owns loading, caching, and runtime behavior for its templates.
+- **API Layer**: `AeternumGenesisAPI` exposes stable interfaces and is registered with Bukkit's `ServicesManager` for cross-plugin access.
+- **Events**: All significant actions emit Bukkit events that external plugins can listen to.
+- **PDC Storage**: Custom identity, levels, cooldowns, and effects are stored via `PersistentDataContainer` for persistence across chunk unloads and server restarts.
+
+---
+
+## Build & Deployment
+
+### Production Build
+
+```bash
+mvn clean package -DskipTests
+```
+
+The build produces `target/AeternumGenesis-1.0.0-SNAPSHOT.jar`.
+
+### Build Stages
+
+| Stage | Description |
+|-------|-------------|
+| 1. Resources | Copy and filter YAML resources into `target/classes` |
+| 2. Compile | Compile 152 Java source files with Java 25 target |
+| 3. Test | Run unit and integration tests (skipped with `-DskipTests`) |
+| 4. Package | Assemble the final plugin JAR |
+
+### Deployment Options
+
+#### Manual Deployment
+
+```bash
+# Copy the built JAR to your test server
+cp target/AeternumGenesis-1.0.0-SNAPSHOT.jar /path/to/server/plugins/
+
+# Start or restart the server
+```
+
+#### Example External Plugin
+
+The `examples/rpg-integration` module demonstrates how to build an external plugin that depends on AeternumGenesis. Build it with:
+
+```bash
+cd examples/rpg-integration
+mvn clean package -DskipTests
+```
+
+This produces `examples/rpg-integration/target/rpg-integration-1.0.0-SNAPSHOT.jar`.
+
+---
+
+## API Reference
+
+### Accessing the API
+
+External plugins can access AeternumGenesis through Bukkit's `ServicesManager`:
+
+```java
+import net.sakurain.mc.aeternumgenesis.api.AeternumGenesisAPI;
+
+if (AeternumGenesisAPI.isAvailable()) {
+    AeternumGenesisAPI api = AeternumGenesisAPI.getInstance();
+    api.getMobAPI().spawnMob("zombie_warrior", location, 5);
+}
+```
+
+### API Overview
+
+| API | Description |
+|-----|-------------|
+| `AeternumGenesisAPI` | Central accessor and availability check |
+| `ItemAPI` | Build, give, query, and register custom items |
+| `MobAPI` | Spawn, query, and register custom mobs |
+| `SkillAPI` | Register and trigger skills |
+| `SpawnAPI` | Register and unregister spawn rules |
+| `SetAPI` | Query item sets and their bonuses |
+| `BlockAPI` | Query and register custom blocks |
+| `RegistryAPI` | Register custom effects and conditions |
+
+### Spawn a Mob
+
+```java
+Optional<LivingEntity> mob = api.getMobAPI().spawnMob("blood_zombie", location, 3);
+mob.ifPresent(entity -> entity.setPersistent(true));
+```
+
+### Give an Item
+
+```java
+Optional<ItemStack> item = api.getItemAPI().buildItem("flaming_sword");
+item.ifPresent(stack -> target.getInventory().addItem(stack));
+```
+
+### Listen to Events
+
+```java
+import net.sakurain.mc.aeternumgenesis.api.event.CustomMobDeathEvent;
+
+@EventHandler
+public void onCustomMobDeath(CustomMobDeathEvent event) {
+    String id = event.getTemplateId();
+    Player killer = event.getKiller();
+    if (killer != null) {
+        api.getItemAPI().giveItem(killer, "berserker_trophy", 1);
+    }
+}
+```
+
+### Register Custom Effects
+
+```java
+api.getRegistryAPI().registerEffect("freeze", () -> new FreezeEffect());
+api.getRegistryAPI().registerCondition("has_permission", () -> new HasPermissionCondition());
+```
+
+### Available Events
+
+- `CustomItemBuildEvent`
+- `CustomItemSpawnEvent`
+- `CustomMobPreSpawnEvent`
+- `CustomMobSpawnEvent`
+- `CustomMobDeathEvent`
+- `CustomMobDropEvent`
+- `CustomMobSkillTriggerEvent`
+- `CustomMobSkillExecuteEvent`
+- `CustomMobDamageModifyEvent`
+- `CustomBlockPlaceEvent`
+- `CustomBlockBreakEvent`
+
+---
+
+## Configuration Examples
+
+### Custom Item
 
 Create `plugins/AeternumGenesis/items/my_items.yml`:
 
@@ -100,20 +343,12 @@ flaming_sword:
   attack_effects:
     chance: 0.5
     effects:
-      - type: potion
+      - type: ignite
         target: VICTIM
-        potion_type: WITHER
-        duration: 100
-        amplifier: 1
+        duration: 60
 ```
 
-Give it to yourself:
-
-```
-/genesis give flaming_sword
-```
-
-### 2. Create a Custom Mob
+### Custom Mob
 
 Create `plugins/AeternumGenesis/mobs/my_mobs.yml`:
 
@@ -138,166 +373,13 @@ flame_zombie:
     experience: 10
 ```
 
-Spawn it:
+### Skill
 
-```
-/genesis spawn flame_zombie
-```
-
-### 3. Bind a Skill
-
-See the [Skills](#skills) section and bind a skill to your mob:
-
-```yaml
-flame_zombie:
-  # ... other config ...
-  skills:
-    - trigger: ON_HIT
-      skill_id: fire_strike
-      chance: 0.3
-```
-
----
-
-## Configuration
-
-All configuration files live under `plugins/AeternumGenesis/`:
-
-```
-plugins/AeternumGenesis/
-├── config.yml              # Main plugin settings
-├── items/                  # Item templates (*.yml)
-├── mobs/                   # Mob templates (*.yml)
-├── skills/                 # Skill templates (*.yml)
-├── spawns/                 # Spawn rules (*.yml)
-└── sets/                   # Item set definitions (*.yml)
-```
-
-Subdirectories are fully supported.
-
----
-
-### Custom Items
-
-#### Basic Fields
-
-| Field | Description |
-|-------|-------------|
-| `material` | Vanilla material name (required) |
-| `name` | Display name with `&` color codes |
-| `lore` | List of lore lines |
-| `amount` | Stack size (default: 1) |
-| `custom_model_data` | CustomModelData integer for resource packs |
-| `glow` | Enchantment glow effect without actual enchantments |
-| `enchantments` | Map of `ENCHANTMENT: level` |
-| `hide_enchants` | Hide enchantment lore |
-| `attributes` | List of attribute modifiers |
-| `unbreakable` | Unbreakable flag |
-| `item_flags` | List of item flags e.g. `HIDE_ATTRIBUTES` |
-
-#### Passive Effects (`passive_effects`)
-
-Triggered by `HOLD`, `WEAR`, or `BOTH`:
-
-```yaml
-passive_effects:
-  - trigger: WEAR
-    effects:
-      - type: potion
-        potion_type: NIGHT_VISION
-        duration: -1      # -1 = permanent
-        amplifier: 0
-      - type: attribute
-        attribute: MAX_HEALTH
-        amount: 4.0
-        operation: ADD_NUMBER
-        slot: CHEST
-```
-
-#### Attack Effects (`attack_effects`)
-
-Triggered when the item is used to damage an entity:
-
-```yaml
-attack_effects:
-  chance: 0.3
-  effects:
-    - type: potion
-      target: VICTIM      # VICTIM / SELF / AREA
-      potion_type: POISON
-      duration: 80
-      amplifier: 0
-    - type: particle
-      target: VICTIM
-      particle: WITCH
-      count: 5
-```
-
----
-
-### Custom Mobs
-
-#### Basic Fields
-
-| Field | Description |
-|-------|-------------|
-| `type` | Vanilla entity type (required) |
-| `display_name` | Name above the mob's head |
-| `health` / `max_health` | Health values |
-| `attributes` | Attribute modifiers (e.g. `ATTACK_DAMAGE`, `MOVEMENT_SPEED`) |
-| `equipment` | Helmet, chestplate, leggings, boots, main_hand, off_hand |
-| `equipment_effects` | Whether mob equipment affects attributes/enchants/special effects |
-| `glowing` / `glowing_color` | Glow effect and team color |
-| `size` | Size for Slime/Phantom |
-| `baby` | Baby form for Ageable mobs |
-| `bossbar` | BossBar configuration |
-| `particles` | Continuous particle effects |
-| `ambient_sound` | Periodic ambient sound |
-| `potion_effects` | Permanent potion effects |
-| `senses` | Vision/hearing/smell ranges |
-| `water_behavior` | Floating, breathing, water speed |
-| `immunities` | Damage cause immunities |
-| `break_door` | Door-breaking behavior |
-| `ai` | Custom AI goals and targeting strategy |
-| `drops` | Drop table |
-| `skills` | Skill bindings |
-
-#### Equipment Example
-
-```yaml
-equipment:
-  helmet:
-    item: diamond_helmet
-    drop_chance: 0.1
-  main_hand:
-    item: genesis:flaming_sword
-    drop_chance: 0.05
-```
-
-Use `genesis:item_id` to equip a custom item.
-
-#### BossBar Example
-
-```yaml
-bossbar:
-  enabled: true
-  title: "&cFlame Zombie"
-  color: RED
-  style: NOTCHED_20
-  show_to_all: false
-  range: 48
-```
-
----
-
-### Skills
-
-Skills are reusable templates stored in `plugins/AeternumGenesis/skills/`.
+Create `plugins/AeternumGenesis/skills/my_skills.yml`:
 
 ```yaml
 fire_strike:
   cooldown: 3.0
-  on_cooldown_skill: weak_strike    # optional fallback
   conditions:
     - type: health_percent
       min: 30
@@ -313,67 +395,11 @@ fire_strike:
       particle: FLAME
       location: TARGET
       count: 20
-      offset_x: 1.0
-      offset_y: 1.0
-      offset_z: 1.0
 ```
 
-#### Built-in Effect Types
+### Spawn Rule
 
-| Effect | Description |
-|--------|-------------|
-| `damage` / `damage_percent` | Direct damage or max-health percentage damage |
-| `heal` / `heal_percent` | Heal caster/target |
-| `potion` / `potion_clear` | Apply or remove potion effects |
-| `teleport` | Teleport target |
-| `summon` | Summon other custom mobs |
-| `particle` | Spawn particles |
-| `sound` | Play sounds |
-| `lightning` | Strike lightning |
-| `explosion` | Create explosions |
-| `ignite` / `extinguish` | Set on fire or put out fire |
-| `knockback` | Knockback |
-| `message` / `title` / `actionbar` | Send messages |
-| `drop_item` | Drop items |
-| `execute_command` | Run commands |
-| `delay` | Delay between effects |
-
-#### Built-in Conditions
-
-| Condition | Description |
-|-----------|-------------|
-| `health_percent` / `health` | Caster health checks |
-| `target_health_percent` | Target health check |
-| `chance` | Extra probability |
-| `target_type` | Target entity type |
-| `target_distance` | Distance to target |
-| `time_of_day` | day/night/dawn/dusk |
-| `weather` | clear/raining/thundering |
-| `world` / `biome` | World/biome checks |
-| `light_level` / `y_above` / `y_below` | Location checks |
-| `has_potion` / `is_on_ground` | State checks |
-| `mobs_in_radius` | Nearby mob count |
-| `and` / `or` / `not` | Composite conditions |
-
-#### Target Selectors
-
-Effects can target: `CASTER`, `TARGET`, `NEARBY`, `ALL_NEARBY`, `OWNER`, `RANDOM_NEARBY`.
-
----
-
-### Spawn Rules
-
-Spawn rules control how custom mobs enter the world.
-
-#### Action Types
-
-| Action | Description |
-|--------|-------------|
-| `REPLACE` | Replace vanilla natural spawns |
-| `ADD` | Add extra spawns around players |
-| `DENY` | Prevent vanilla spawns |
-
-#### Example: Replace Zombies at Night
+Create `plugins/AeternumGenesis/spawns/my_spawns.yml`:
 
 ```yaml
 blood_zombie_night:
@@ -387,71 +413,6 @@ blood_zombie_night:
     - night true
     - outside true
     - light_level "0-7"
-```
-
-#### Example: Rare Full-Moon Boss
-
-```yaml
-zombie_warrior_fullmoon:
-  action: ADD
-  type: zombie_warrior
-  chance: 0.01
-  priority: 30
-  level: 5
-  worlds: world
-  biomes: PLAINS,FOREST,SAVANNA
-  position_type: LAND
-  conditions:
-    - night true
-    - moon_phase full
-    - outside true
-    - y_above 60
-  density_limits:
-    max_per_radius:
-      template: zombie_warrior
-      amount: 1
-      radius: 1000
-```
-
-#### Available Conditions
-
-`night`, `day`, `raining`, `thundering`, `outside`, `inside`, `moon_phase`, `y_above`, `y_below`, `y_range`, `light_level`, `block_below`, `time_range`, `random_chance`, `biome`, `world`.
-
----
-
-### Item Sets
-
-Define set bonuses in `plugins/AeternumGenesis/sets/`:
-
-```yaml
-mirror_flower:
-  name: "&bMirror Flower Set"
-  base_bonus:
-    required_count: 4
-    required_slots:
-      - slot: HEAD
-        item: mirror_flower_helmet
-      - slot: CHEST
-        item: mirror_flower_chestplate
-      - slot: LEGS
-        item: mirror_flower_leggings
-      - slot: FEET
-        item: mirror_flower_boots
-    effects:
-      - type: potion
-        potion_type: DAMAGE_RESISTANCE
-        duration: -1
-        amplifier: 1
-  advanced_bonus:
-    - name: "&bMirror Flower · Complete"
-      extra_requirements:
-        - slot: MAIN_HAND
-          item: mirror_flower_sword
-      effects:
-        - type: potion
-          potion_type: INCREASE_DAMAGE
-          duration: -1
-          amplifier: 1
 ```
 
 ---
@@ -479,108 +440,139 @@ genesis.reload:   default: op
 genesis.admin:    default: op   # grants all above
 ```
 
----
-
-## API for Developers
-
-AeternumGenesis exposes a public API through Bukkit's `ServicesManager`.
-
-### Getting the API
-
-```java
-if (AeternumGenesisAPI.isAvailable()) {
-    AeternumGenesisAPI api = AeternumGenesisAPI.getInstance();
-    api.getMobAPI().spawnMob("zombie_warrior", location, 5);
-}
-```
-
-### Spawn a Mob
-
-```java
-Optional<LivingEntity> mob = api.getMobAPI().spawnMob("blood_zombie", location, 3);
-mob.ifPresent(entity -> entity.setPersistent(true));
-```
-
-### Listen to Events
-
-```java
-@EventHandler
-public void onCustomMobDeath(CustomMobDeathEvent event) {
-    String id = event.getTemplateId();
-    Player killer = event.getKiller();
-    if (killer != null) {
-        api.getItemAPI().giveItem(killer, "berserker_trophy", 1);
-    }
-}
-```
-
-### Register Custom Effects
-
-```java
-api.getRegistryAPI().registerEffect("freeze", () -> new FreezeEffect());
-api.getRegistryAPI().registerCondition("has_permission", () -> new HasPermissionCondition());
-```
-
-### API Events
-
-- `CustomItemSpawnEvent`
-- `CustomItemBuildEvent`
-- `CustomMobPreSpawnEvent`
-- `CustomMobSpawnEvent`
-- `CustomMobDeathEvent`
-- `CustomMobDropEvent`
-- `CustomMobSkillTriggerEvent`
-- `CustomMobSkillExecuteEvent`
-- `CustomMobDamageModifyEvent`
-
----
-
-## Performance & Safety
-
-- All YAML configs are loaded once at startup or `/reload` and cached in memory.
-- Custom mobs are tracked via `PersistentDataContainer`, avoiding memory leaks.
-- Skill cooldowns are stored in the mob's PDC, not in memory maps.
-- Particle effects respect a configurable visibility range.
-- ADD-mode spawns are throttled by player, distance, attempts, and density limits.
-- All file I/O uses try-with-resources and per-file error handling.
-- Attribute values are validated to prevent overflow.
+The base command alias `/gs` is also available.
 
 ---
 
 ## Troubleshooting
 
-### "UnsupportedClassVersionError"
-Your server is running Java older than 25. Upgrade to Java 25+.
+### Build Failures
 
-### "Legacy Material Support" warning
-Make sure `plugin.yml` contains `api-version: '26.1.2'` (already set by default).
+**Problem**: Maven build fails with dependency resolution errors.
 
-### Mobs/items not loading
+**Solution**:
+
+```bash
+# Clear the local Maven cache for this project
+rm -rf ~/.m2/repository/net/sakurain/mc/aeternumgenesis
+mvn clean package -DskipTests
+```
+
+### UnsupportedClassVersionError
+
+**Problem**: Server fails to load the plugin with `UnsupportedClassVersionError`.
+
+**Solution**: Upgrade the server runtime to Java 25 or newer. AeternumGenesis is compiled for Java 25.
+
+### Legacy Material Support Warning
+
+**Problem**: Console shows legacy material support warnings.
+
+**Solution**: Ensure `plugin.yml` contains `api-version: '1.21.1'`. This is already set by default.
+
+### Items or Mobs Not Loading
+
+**Problem**: Custom items or mobs do not appear in-game.
+
+**Solution**:
+
 - Check the console for YAML parse errors.
 - Verify file paths are under `plugins/AeternumGenesis/items/`, `mobs/`, `skills/`, `spawns/`, or `sets/`.
 - Ensure template IDs are unique across all files of the same type.
+- Run `/genesis reload` after making changes.
 
-### Spawn rules not working
-- For `REPLACE`/`DENY`, vanilla mob spawning (`doMobSpawning`) must be enabled.
-- Check that `worlds`, `biomes`, and `conditions` match your target environment.
+### Spawn Rules Not Working
+
+**Problem**: Custom mobs do not spawn naturally.
+
+**Solution**:
+
+- For `REPLACE` and `DENY` actions, vanilla mob spawning (`doMobSpawning`) must be enabled.
+- Check that `worlds`, `biomes`, and `conditions` match the target environment.
 - Verify density limits are not already exceeded.
+- Increase `priority` if multiple rules target the same vanilla mob.
+
+### Skills Not Triggering
+
+**Problem**: Mob skills do not execute.
+
+**Solution**:
+
+- Verify the skill ID in the mob's `skills` list matches a loaded skill template.
+- Check skill conditions such as health percent, time of day, or cooldown state.
+- Ensure the skill is bound to a supported trigger.
+
+---
+
+## Contributing
+
+Contributions are welcome. Please follow this workflow:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/your-feature`.
+3. Make changes following the code style guidelines.
+4. Build and test locally: `mvn clean package`.
+5. Commit using clear messages: `git commit -m 'feat: add new feature'`.
+6. Push to your fork: `git push origin feature/your-feature`.
+7. Open a Pull Request against the main branch.
+
+### Code Quality Requirements
+
+Before submitting a Pull Request:
+
+- [ ] The project builds successfully with `mvn clean package -DskipTests`.
+- [ ] Code follows project naming conventions.
+- [ ] New features include example YAML or documentation updates.
+- [ ] API changes include updates to the API reference in the README.
+- [ ] No new compiler warnings are introduced.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
 
 ```
+MIT License
+
 Copyright (c) 2026 Yuyang.Wang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ---
 
-## Credits
+## Acknowledgments
 
-- **Author:** Yuyang.Wang
-- **Repository:** [IYeaSakura/AeternumGenesis](https://github.com/IYeaSakura/AeternumGenesis)
-- **Powered by:** [PaperMC](https://papermc.io/)
+This project is built with the help of the following open-source projects and communities:
+
+- [PaperMC](https://papermc.io/) - High-performance Minecraft server software
+- [OpenJDK](https://openjdk.org/) - Java development kit
+- [Apache Maven](https://maven.apache.org/) - Build and dependency management
+- [Adventure](https://docs.advntr.dev/) - User-interface library for Minecraft
+
+---
+
+## Contact
+
+- **Author**: Yuyang.Wang
+- **Repository**: [IYeaSakura/AeternumGenesis](https://github.com/IYeaSakura/AeternumGenesis)
+- **GitHub**: [https://github.com/IYeaSakura](https://github.com/IYeaSakura)
 
 If you find bugs or have feature requests, please open an [issue](../../issues) or submit a pull request.

@@ -1,69 +1,143 @@
 # AeternumGenesis
 
-[![PaperMC](https://img.shields.io/badge/PaperMC-26.1.2-blue.svg)](https://papermc.io/)
-[![Java](https://img.shields.io/badge/Java-25%2B-orange.svg)](https://adoptium.net/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<div align="center">
 
-> 一款受 MythicMobs 启发的、基于 YAML 配置的轻量级 **PaperMC 26.1.2** 自定义怪物与物品插件。AeternumGenesis 让服主无需编写代码或接触 NMS，即可创建自定义怪物、装备、技能、生成规则以及物品套装。
+[![PaperMC](https://img.shields.io/badge/PaperMC-26.1.2-000000?logo=paper-minecraft)](https://papermc.io/)
+[![Java](https://img.shields.io/badge/Java-25%2B-007396?logo=openjdk)](https://openjdk.org/)
+[![Maven](https://img.shields.io/badge/Maven-3.9%2B-C71A36?logo=apache-maven)](https://maven.apache.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
----
+</div>
 
-## 目录
+一款受 MythicMobs 启发的、基于 YAML 配置的轻量级 **PaperMC 26.1.2** 自定义怪物与物品插件。AeternumGenesis 让服主无需编写代码或接触 NMS，即可创建自定义怪物、装备、技能、生成规则以及物品套装。
 
-- [功能特性](#功能特性)
-- [环境要求](#环境要求)
-- [安装](#安装)
-- [快速开始](#快速开始)
-- [配置说明](#配置说明)
-  - [自定义物品](#自定义物品)
-  - [自定义怪物](#自定义怪物)
-  - [技能](#技能)
-  - [生成规则](#生成规则)
-  - [物品套装](#物品套装)
-- [指令与权限](#指令与权限)
-- [开发者 API](#开发者-api)
-- [性能与安全](#性能与安全)
-- [常见问题](#常见问题)
-- [许可证](#许可证)
-- [致谢](#致谢)
+[功能特性](#功能特性) | [技术栈](#技术栈) | [项目结构](#项目结构) | [快速开始](#快速开始) | [开发指南](#开发指南) | [构建与部署](#构建与部署) | [配置示例](#配置示例) | [命令与权限](#命令与权限) | [API 参考](#api-参考) | [故障排查](#故障排查) | [贡献指南](#贡献指南) | [许可证](#许可证) | [致谢](#致谢) | [联系方式](#联系方式)
 
 ---
 
-<a id="功能特性"></a>
 ## 功能特性
 
-- **自定义物品** —— 定义带有自定义名称、Lore、附魔、属性、CustomModelData、发光效果、被动效果、攻击效果和套装加成的武器、护甲与工具。
-- **自定义怪物** —— 基于原版实体类型创建怪物，可自定义生命值、属性、装备、粒子、音效、BossBar、免疫效果、AI 行为以及水中行为。
-- **技能系统** —— 基于 YAML 的技能引擎，内置 20 余种效果、条件、目标选择器、冷却机制以及冷却中回退技能。
-- **自然生成控制** —— REPLACE（替换）、ADD（追加）、DENY（阻止）三种生成规则，支持时间、天气、生物群系、光照、Y 轴、月相和密度条件。
-- **物品套装** —— 当玩家装备完整套装时触发额外效果。
-- **公开 API** —— 稳定的 API，通过 Bukkit 事件供其他插件接入，并支持注册自定义效果与条件。
-- **热重载** —— 游戏内使用 `/genesis reload` 即可重载所有配置。
-- **零 NMS** —— 完全基于 Bukkit/Paper API 构建，兼容性高、易于维护。
+### 自定义物品
+- 定义带有自定义名称、Lore、附魔、属性、CustomModelData 和发光效果的武器、护甲与工具。
+- 添加由手持或穿戴触发的被动效果。
+- 配置攻击时按概率触发的攻击效果。
+- 将多件物品关联为套装，激活强大的套装奖励。
+
+### 自定义怪物
+- 基于任意原版实体类型创建怪物，支持自定义生命值、属性、装备和等级缩放。
+- 添加持续粒子、环境音效、BossBar、发光效果和药水效果。
+- 配置免疫、水中行为、破门行为和自定义 AI 目标。
+- 定义覆盖或扩展原版战利品的掉落表。
+
+### 技能系统
+- 通过 YAML 构建可复用的技能模板，包含冷却、条件与链式效果。
+- 使用 20 余种内置效果类型：伤害、百分比伤害、治疗、百分比治疗、药水、清除药水、传送、召唤、粒子、音效、闪电、爆炸、点燃、灭火、击退、消息、标题、ActionBar、掉落物品、执行命令和延迟。
+- 使用 `and`、`or`、`not` 组合条件。
+- 将技能绑定到怪物，支持出生时、命中时、死亡时和定时触发等触发器。
+
+### 自然生成控制
+- 使用 `REPLACE`、`ADD`、`DENY` 动作控制自定义怪物如何进入世界。
+- 根据昼夜、天气、群系、世界、光照等级、Y 轴高度、月相、脚下方块和随机概率应用条件。
+- 通过密度限制防止过度生成。
+
+### 公开开发者 API
+- 通过 Bukkit 的 ServicesManager 访问物品、怪物、技能、生成、套装、方块和注册表 API。
+- 监听自定义物品构建、怪物生成、怪物死亡、技能执行等 Bukkit 事件。
+- 从外部插件注册自定义技能效果、技能条件和生成条件。
+
+### 运维特性
+- 通过 `/genesis reload` 在游戏内热重载所有 YAML 配置。
+- 零 NMS 依赖，完全基于 Bukkit/Paper API 构建，兼容性最佳。
+- 通过 Bukkit PersistentDataContainer 持久化存储数据。
 
 ---
 
-<a id="环境要求"></a>
-## 环境要求
+## 技术栈
 
-| 组件 | 版本 |
-|-----------|---------|
-| 服务端 | PaperMC **26.1.2** |
-| Java | **25** 或更高 |
-| 构建工具 | Maven 3.9+ |
+### 核心技术
 
-> ⚠️ PaperMC 26.1.2 对应 Minecraft Java 版 26.1.2（Mojang 的年度版本号）。Java 21 及更低版本**无法**运行。
+| 类别 | 技术 | 版本 |
+|------|------|------|
+| 服务端平台 | PaperMC | 26.1.2 |
+| 语言 | Java | 25+ |
+| 构建工具 | Maven | 3.9+ |
+| API | Bukkit/Paper API | 26.1.2 |
+
+### 额外库
+
+- **Adventure API**：基于组件的聊天与文本序列化。
+- **js-yaml**：文档工具中用于 YAML 验证示例。
 
 ---
 
-<a id="安装"></a>
-## 安装
+## 项目结构
 
-1. 从 [Releases](../../releases) 下载最新的 `AeternumGenesis-*.jar`。
-2. 将 jar 文件放入服务器的 `plugins/` 文件夹。
-3. 启动服务器一次，插件会自动生成默认配置文件夹。
-4. 编辑 `plugins/AeternumGenesis/` 下的 YAML 文件，自定义物品、怪物、技能、生成规则和套装。
-5. 执行 `/genesis reload` 或重启服务器。
+```
+AeternumGenesis/
+├── src/main/java/net/sakurain/mc/aeternumgenesis/   # 主插件源码
+│   ├── AeternumGenesisPlugin.java                   # 插件入口
+│   ├── api/                                         # 公开 API 接口与事件
+│   │   ├── AeternumGenesisAPI.java                  # 中央 API 访问器
+│   │   ├── ItemAPI.java                             # 物品查询/构建 API
+│   │   ├── MobAPI.java                              # 怪物生成/查询 API
+│   │   ├── SkillAPI.java                            # 技能注册 API
+│   │   ├── SpawnAPI.java                            # 生成规则 API
+│   │   ├── SetAPI.java                              # 物品套装 API
+│   │   ├── BlockAPI.java                            # 自定义方块 API
+│   │   ├── RegistryAPI.java                         # 效果/条件注册 API
+│   │   ├── event/                                   # Bukkit 事件
+│   │   ├── exception/                               # 自定义异常
+│   │   └── impl/                                    # API 实现
+│   ├── command/                                     # 命令执行器与子命令
+│   ├── config/                                      # 配置加载与缓存
+│   ├── item/                                        # 自定义物品系统
+│   ├── item/set/                                    # 物品套装系统
+│   ├── item/effect/                                 # 被动与攻击效果处理器
+│   ├── mob/                                         # 自定义怪物系统
+│   ├── skill/                                       # 技能引擎
+│   ├── skill/effect/                                # 内置技能效果
+│   ├── skill/condition/                             # 内置技能条件
+│   ├── spawn/                                       # 自然生成控制
+│   ├── spawn/condition/                             # 内置生成条件
+│   ├── block/                                       # 自定义方块系统
+│   ├── listener/                                    # 事件监听器
+│   ├── ai/                                          # 自定义 AI 目标
+│   └── util/                                        # 工具类
+├── src/main/resources/                              # 默认配置模板
+│   ├── plugin.yml                                   # 插件描述文件
+│   ├── config.yml                                   # 主配置
+│   ├── items/example_items.yml                      # 物品模板示例
+│   ├── mobs/example_mobs.yml                        # 怪物模板示例
+│   ├── skills/example_skills.yml                    # 技能模板示例
+│   ├── spawns/example_spawns.yml                    # 生成规则示例
+│   ├── sets/example_set.yml                         # 物品套装示例
+│   └── blocks/example_blocks.yml                    # 自定义方块示例
+├── test/                                            # 测试服配置模板
+├── examples/rpg-integration/                        # 外部插件示例
+├── .doc/                                            # 内部文档与技能说明
+├── pom.xml                                          # Maven 构建配置
+├── package.json                                     # 文档工具 Node 配置
+├── README.md                                        # 英文文档
+└── README_zh.md                                     # 中文文档
+```
+
+---
+
+## 快速开始
+
+### 前置要求
+
+- **服务端**：PaperMC 26.1.2 或兼容构建版本。
+- **Java**：25 或更新版本。Java 21 及以下会报 `UnsupportedClassVersionError`。
+- **构建工具**：若从源码构建，需要 Maven 3.9 或更新版本。
+
+### 安装
+
+1. 从 [Releases](../../releases) 页面下载最新的 `AeternumGenesis-*.jar`。
+2. 将 JAR 文件放入服务端的 `plugins/` 目录。
+3. 启动服务端一次，生成默认配置文件夹。
+4. 编辑 `plugins/AeternumGenesis/` 下的 YAML 文件以自定义内容。
+5. 在游戏内执行 `/genesis reload` 或重启服务端。
 
 ### 从源码构建
 
@@ -72,21 +146,186 @@
 git clone https://github.com/IYeaSakura/AeternumGenesis.git
 cd AeternumGenesis
 
-# 使用 Maven 构建
-mvn clean package
+# 构建插件 JAR
+mvn clean package -DskipTests
 
-# 输出文件：
+# 构建产物位于：
 # target/AeternumGenesis-1.0.0-SNAPSHOT.jar
+```
+
+### 环境变量
+
+AeternumGenesis 正常运行时不需要环境变量，所有行为都通过 `plugins/AeternumGenesis/` 下的 YAML 文件控制。
+
+文档工具所需的 Node.js 依赖可通过以下命令安装：
+
+```bash
+npm install
 ```
 
 ---
 
-<a id="快速开始"></a>
-## 快速开始
+## 开发指南
 
-### 1. 创建自定义物品
+### 可用脚本
 
-创建文件 `plugins/AeternumGenesis/items/my_items.yml`：
+| 命令 | 说明 |
+|------|------|
+| `mvn clean package` | 构建插件 JAR |
+| `mvn clean package -DskipTests` | 跳过测试构建 |
+| `mvn clean verify` | 构建并运行质量检查 |
+| `npm install` | 安装文档工具依赖 |
+
+### 代码风格
+
+#### 命名规范
+
+| 项目 | 规范 | 示例 |
+|------|------|------|
+| 类 | PascalCase | `AeternumGenesisPlugin.java`, `CustomMobManager.java` |
+| 方法 | camelCase | `spawnMob`, `registerTemplate` |
+| 变量 | camelCase | `templateId`, `itemStack` |
+| 常量 | SCREAMING_SNAKE_CASE | `ITEM_ID_KEY`, `DEFAULT_COOLDOWN` |
+| 包 | lowercase | `net.sakurain.mc.aeternumgenesis.mob` |
+
+#### 架构模式
+
+- **插件入口**：`AeternumGenesisPlugin` 负责初始化管理器、注册监听器、命令和公开 API 服务。
+- **管理器**：每个子系统（`CustomItemManager`、`CustomMobManager`、`SkillManager`、`SpawnManager`）负责各自模板的加载、缓存和运行时行为。
+- **API 层**：`AeternumGenesisAPI` 暴露稳定接口，并通过 Bukkit 的 `ServicesManager` 注册，供跨插件访问。
+- **事件**：所有重要操作都会发出 Bukkit 事件，外部插件可以监听。
+- **PDC 存储**：自定义标识、等级、冷却和效果通过 `PersistentDataContainer` 存储，保证区块卸载和服务器重启后数据不丢失。
+
+---
+
+## 构建与部署
+
+### 生产构建
+
+```bash
+mvn clean package -DskipTests
+```
+
+构建产物为 `target/AeternumGenesis-1.0.0-SNAPSHOT.jar`。
+
+### 构建阶段
+
+| 阶段 | 说明 |
+|------|------|
+| 1. 资源 | 将 YAML 资源复制并过滤到 `target/classes` |
+| 2. 编译 | 使用 Java 25 目标编译 152 个 Java 源文件 |
+| 3. 测试 | 运行单元与集成测试（使用 `-DskipTests` 可跳过） |
+| 4. 打包 | 组装最终插件 JAR |
+
+### 部署方式
+
+#### 手动部署
+
+```bash
+# 将构建好的 JAR 复制到测试服务器
+cp target/AeternumGenesis-1.0.0-SNAPSHOT.jar /path/to/server/plugins/
+
+# 启动或重启服务端
+```
+
+#### 外部插件示例
+
+`examples/rpg-integration` 模块演示了如何构建依赖 AeternumGenesis 的外部插件：
+
+```bash
+cd examples/rpg-integration
+mvn clean package -DskipTests
+```
+
+构建产物为 `examples/rpg-integration/target/rpg-integration-1.0.0-SNAPSHOT.jar`。
+
+---
+
+## API 参考
+
+### 访问 API
+
+外部插件可通过 Bukkit 的 `ServicesManager` 访问 AeternumGenesis：
+
+```java
+import net.sakurain.mc.aeternumgenesis.api.AeternumGenesisAPI;
+
+if (AeternumGenesisAPI.isAvailable()) {
+    AeternumGenesisAPI api = AeternumGenesisAPI.getInstance();
+    api.getMobAPI().spawnMob("zombie_warrior", location, 5);
+}
+```
+
+### API 概览
+
+| API | 说明 |
+|-----|------|
+| `AeternumGenesisAPI` | 中央访问器与可用性检查 |
+| `ItemAPI` | 构建、发放、查询和注册自定义物品 |
+| `MobAPI` | 生成、查询和注册自定义怪物 |
+| `SkillAPI` | 注册和触发技能 |
+| `SpawnAPI` | 注册和注销生成规则 |
+| `SetAPI` | 查询物品套装及其奖励 |
+| `BlockAPI` | 查询和注册自定义方块 |
+| `RegistryAPI` | 注册自定义效果和条件 |
+
+### 生成怪物
+
+```java
+Optional<LivingEntity> mob = api.getMobAPI().spawnMob("blood_zombie", location, 3);
+mob.ifPresent(entity -> entity.setPersistent(true));
+```
+
+### 发放物品
+
+```java
+Optional<ItemStack> item = api.getItemAPI().buildItem("flaming_sword");
+item.ifPresent(stack -> target.getInventory().addItem(stack));
+```
+
+### 监听事件
+
+```java
+import net.sakurain.mc.aeternumgenesis.api.event.CustomMobDeathEvent;
+
+@EventHandler
+public void onCustomMobDeath(CustomMobDeathEvent event) {
+    String id = event.getTemplateId();
+    Player killer = event.getKiller();
+    if (killer != null) {
+        api.getItemAPI().giveItem(killer, "berserker_trophy", 1);
+    }
+}
+```
+
+### 注册自定义效果
+
+```java
+api.getRegistryAPI().registerEffect("freeze", () -> new FreezeEffect());
+api.getRegistryAPI().registerCondition("has_permission", () -> new HasPermissionCondition());
+```
+
+### 可用事件
+
+- `CustomItemBuildEvent`
+- `CustomItemSpawnEvent`
+- `CustomMobPreSpawnEvent`
+- `CustomMobSpawnEvent`
+- `CustomMobDeathEvent`
+- `CustomMobDropEvent`
+- `CustomMobSkillTriggerEvent`
+- `CustomMobSkillExecuteEvent`
+- `CustomMobDamageModifyEvent`
+- `CustomBlockPlaceEvent`
+- `CustomBlockBreakEvent`
+
+---
+
+## 配置示例
+
+### 自定义物品
+
+创建 `plugins/AeternumGenesis/items/my_items.yml`：
 
 ```yaml
 flaming_sword:
@@ -104,22 +343,14 @@ flaming_sword:
   attack_effects:
     chance: 0.5
     effects:
-      - type: potion
+      - type: ignite
         target: VICTIM
-        potion_type: WITHER
-        duration: 100
-        amplifier: 1
+        duration: 60
 ```
 
-给自己发放该物品：
+### 自定义怪物
 
-```
-/genesis give flaming_sword
-```
-
-### 2. 创建自定义怪物
-
-创建文件 `plugins/AeternumGenesis/mobs/my_mobs.yml`：
+创建 `plugins/AeternumGenesis/mobs/my_mobs.yml`：
 
 ```yaml
 flame_zombie:
@@ -142,170 +373,13 @@ flame_zombie:
     experience: 10
 ```
 
-召唤它：
-
-```
-/genesis spawn flame_zombie
-```
-
-### 3. 绑定技能
-
-参考 [技能](#技能) 章节，将技能绑定到怪物：
-
-```yaml
-flame_zombie:
-  # ... 其他配置 ...
-  skills:
-    - trigger: ON_HIT
-      skill_id: fire_strike
-      chance: 0.3
-```
-
----
-
-<a id="配置说明"></a>
-## 配置说明
-
-所有配置文件位于 `plugins/AeternumGenesis/`：
-
-```
-plugins/AeternumGenesis/
-├── config.yml              # 主插件配置
-├── items/                  # 物品模板 (*.yml)
-├── mobs/                   # 怪物模板 (*.yml)
-├── skills/                 # 技能模板 (*.yml)
-├── spawns/                 # 生成规则 (*.yml)
-└── sets/                   # 物品套装定义 (*.yml)
-```
-
-支持任意子目录。
-
----
-
-<a id="自定义物品"></a>
-### 自定义物品
-
-#### 基础字段
-
-| 字段 | 说明 |
-|-------|-------------|
-| `material` | 原版材料名称（必填） |
-| `name` | 显示名称，支持 `&` 颜色代码 |
-| `lore` | Lore 行列表 |
-| `amount` | 堆叠数量（默认：1） |
-| `custom_model_data` | 用于资源包的 CustomModelData 整数值 |
-| `glow` | 仅显示附魔光效，不带实际附魔 |
-| `enchantments` | `ENCHANTMENT: 等级` 的映射 |
-| `hide_enchants` | 隐藏附魔 Lore |
-| `attributes` | 属性修饰符列表 |
-| `unbreakable` | 无法破坏标记 |
-| `item_flags` | 物品标签列表，例如 `HIDE_ATTRIBUTES` |
-
-#### 被动效果（`passive_effects`）
-
-由 `HOLD`（手持）、`WEAR`（穿戴）或 `BOTH`（两者）触发：
-
-```yaml
-passive_effects:
-  - trigger: WEAR
-    effects:
-      - type: potion
-        potion_type: NIGHT_VISION
-        duration: -1      # -1 = 永久
-        amplifier: 0
-      - type: attribute
-        attribute: MAX_HEALTH
-        amount: 4.0
-        operation: ADD_NUMBER
-        slot: CHEST
-```
-
-#### 攻击效果（`attack_effects`）
-
-当该物品用于攻击实体时触发：
-
-```yaml
-attack_effects:
-  chance: 0.3
-  effects:
-    - type: potion
-      target: VICTIM      # VICTIM / SELF / AREA
-      potion_type: POISON
-      duration: 80
-      amplifier: 0
-    - type: particle
-      target: VICTIM
-      particle: WITCH
-      count: 5
-```
-
----
-
-<a id="自定义怪物"></a>
-### 自定义怪物
-
-#### 基础字段
-
-| 字段 | 说明 |
-|-------|-------------|
-| `type` | 原版实体类型（必填） |
-| `display_name` | 怪物头顶显示的名称 |
-| `health` / `max_health` | 生命值 |
-| `attributes` | 属性修饰符（例如 `ATTACK_DAMAGE`、`MOVEMENT_SPEED`） |
-| `equipment` | 头盔、胸甲、护腿、靴子、主手、副手 |
-| `equipment_effects` | 怪物装备是否生效（属性/附魔/特殊效果） |
-| `glowing` / `glowing_color` | 发光效果与队伍颜色 |
-| `size` | 史莱姆/幻翼的尺寸 |
-| `baby` | 可成长怪物的幼年形态 |
-| `bossbar` | BossBar 配置 |
-| `particles` | 持续播放的粒子效果 |
-| `ambient_sound` | 周期性环境音效 |
-| `potion_effects` | 永久药水效果 |
-| `senses` | 视觉/听觉/嗅觉范围 |
-| `water_behavior` | 漂浮、呼吸、水中移动速度 |
-| `immunities` | 伤害来源免疫 |
-| `break_door` | 破门行为 |
-| `ai` | 自定义 AI 目标与寻路策略 |
-| `drops` | 掉落表 |
-| `skills` | 技能绑定 |
-
-#### 装备示例
-
-```yaml
-equipment:
-  helmet:
-    item: diamond_helmet
-    drop_chance: 0.1
-  main_hand:
-    item: genesis:flaming_sword
-    drop_chance: 0.05
-```
-
-使用 `genesis:item_id` 为怪物装备自定义物品。
-
-#### BossBar 示例
-
-```yaml
-bossbar:
-  enabled: true
-  title: "&c烈焰僵尸"
-  color: RED
-  style: NOTCHED_20
-  show_to_all: false
-  range: 48
-```
-
----
-
-<a id="技能"></a>
 ### 技能
 
-技能是可复用的模板，存放在 `plugins/AeternumGenesis/skills/`。
+创建 `plugins/AeternumGenesis/skills/my_skills.yml`：
 
 ```yaml
 fire_strike:
   cooldown: 3.0
-  on_cooldown_skill: weak_strike    # 可选的回退技能
   conditions:
     - type: health_percent
       min: 30
@@ -321,68 +395,11 @@ fire_strike:
       particle: FLAME
       location: TARGET
       count: 20
-      offset_x: 1.0
-      offset_y: 1.0
-      offset_z: 1.0
 ```
 
-#### 内置效果类型
-
-| 效果 | 说明 |
-|--------|-------------|
-| `damage` / `damage_percent` | 直接伤害或基于最大生命值的百分比伤害 |
-| `heal` / `heal_percent` | 治疗施法者/目标 |
-| `potion` / `potion_clear` | 施加或移除药水效果 |
-| `teleport` | 传送目标 |
-| `summon` | 召唤其他自定义怪物 |
-| `particle` | 生成粒子 |
-| `sound` | 播放音效 |
-| `lightning` | 召唤闪电 |
-| `explosion` | 创建爆炸 |
-| `ignite` / `extinguish` | 点燃或熄灭火焰 |
-| `knockback` | 击退 |
-| `message` / `title` / `actionbar` | 发送消息 |
-| `drop_item` | 掉落物品 |
-| `execute_command` | 执行指令 |
-| `delay` | 效果之间的延迟 |
-
-#### 内置条件
-
-| 条件 | 说明 |
-|-----------|-------------|
-| `health_percent` / `health` | 施法者生命值检查 |
-| `target_health_percent` | 目标生命值检查 |
-| `chance` | 额外概率 |
-| `target_type` | 目标实体类型 |
-| `target_distance` | 与目标的距离 |
-| `time_of_day` | day/night/dawn/dusk |
-| `weather` | clear/raining/thundering |
-| `world` / `biome` | 世界/生物群系检查 |
-| `light_level` / `y_above` / `y_below` | 位置检查 |
-| `has_potion` / `is_on_ground` | 状态检查 |
-| `mobs_in_radius` | 附近怪物数量 |
-| `and` / `or` / `not` | 复合条件 |
-
-#### 目标选择器
-
-效果可指向：`CASTER`、`TARGET`、`NEARBY`、`ALL_NEARBY`、`OWNER`、`RANDOM_NEARBY`。
-
----
-
-<a id="生成规则"></a>
 ### 生成规则
 
-生成规则控制自定义怪物如何进入世界。
-
-#### 动作类型
-
-| 动作 | 说明 |
-|--------|-------------|
-| `REPLACE` | 替换原版自然生成 |
-| `ADD` | 在玩家附近追加额外生成 |
-| `DENY` | 阻止原版生成 |
-
-#### 示例：夜间替换僵尸
+创建 `plugins/AeternumGenesis/spawns/my_spawns.yml`：
 
 ```yaml
 blood_zombie_night:
@@ -398,86 +415,19 @@ blood_zombie_night:
     - light_level "0-7"
 ```
 
-#### 示例：满月稀有 Boss
-
-```yaml
-zombie_warrior_fullmoon:
-  action: ADD
-  type: zombie_warrior
-  chance: 0.01
-  priority: 30
-  level: 5
-  worlds: world
-  biomes: PLAINS,FOREST,SAVANNA
-  position_type: LAND
-  conditions:
-    - night true
-    - moon_phase full
-    - outside true
-    - y_above 60
-  density_limits:
-    max_per_radius:
-      template: zombie_warrior
-      amount: 1
-      radius: 1000
-```
-
-#### 可用条件
-
-`night`、`day`、`raining`、`thundering`、`outside`、`inside`、`moon_phase`、`y_above`、`y_below`、`y_range`、`light_level`、`block_below`、`time_range`、`random_chance`、`biome`、`world`。
-
 ---
 
-<a id="物品套装"></a>
-### 物品套装
+## 命令与权限
 
-在 `plugins/AeternumGenesis/sets/` 定义套装奖励：
+### 玩家命令
 
-```yaml
-mirror_flower:
-  name: "&b镜花套装"
-  base_bonus:
-    required_count: 4
-    required_slots:
-      - slot: HEAD
-        item: mirror_flower_helmet
-      - slot: CHEST
-        item: mirror_flower_chestplate
-      - slot: LEGS
-        item: mirror_flower_leggings
-      - slot: FEET
-        item: mirror_flower_boots
-    effects:
-      - type: potion
-        potion_type: DAMAGE_RESISTANCE
-        duration: -1
-        amplifier: 1
-  advanced_bonus:
-    - name: "&b镜花 · 圆满"
-      extra_requirements:
-        - slot: MAIN_HAND
-          item: mirror_flower_sword
-      effects:
-        - type: potion
-          potion_type: INCREASE_DAMAGE
-          duration: -1
-          amplifier: 1
-```
-
----
-
-<a id="指令与权限"></a>
-## 指令与权限
-
-### 玩家指令
-
-| 指令 | 权限 | 说明 |
-|---------|------------|-------------|
-| `/genesis` | `genesis.use` | 基础指令 |
+| 命令 | 权限 | 说明 |
+|------|------|------|
+| `/genesis` | `genesis.use` | 基础命令 |
 | `/genesis give <item-id> [player] [amount]` | `genesis.give` | 发放自定义物品 |
-| `/genesis spawn <mob-id> [player\|x y z] [level]` | `genesis.spawn` | 召唤自定义怪物 |
+| `/genesis spawn <mob-id> [player\|x y z] [level]` | `genesis.spawn` | 生成自定义怪物 |
 | `/genesis reload` | `genesis.reload` | 重载所有配置 |
-| `/genesis list <items\|mobs\|skills\|spawns> [page]` | `genesis.list` | 列出已加载的模板 |
+| `/genesis list <items\|mobs\|skills\|spawns> [page]` | `genesis.list` | 列出已加载模板 |
 
 ### 权限节点
 
@@ -490,113 +440,139 @@ genesis.reload:   default: op
 genesis.admin:    default: op   # 授予以上所有权限
 ```
 
----
-
-<a id="开发者-api"></a>
-## 开发者 API
-
-AeternumGenesis 通过 Bukkit 的 `ServicesManager` 暴露公开 API。
-
-### 获取 API
-
-```java
-if (AeternumGenesisAPI.isAvailable()) {
-    AeternumGenesisAPI api = AeternumGenesisAPI.getInstance();
-    api.getMobAPI().spawnMob("zombie_warrior", location, 5);
-}
-```
-
-### 召唤怪物
-
-```java
-Optional<LivingEntity> mob = api.getMobAPI().spawnMob("blood_zombie", location, 3);
-mob.ifPresent(entity -> entity.setPersistent(true));
-```
-
-### 监听事件
-
-```java
-@EventHandler
-public void onCustomMobDeath(CustomMobDeathEvent event) {
-    String id = event.getTemplateId();
-    Player killer = event.getKiller();
-    if (killer != null) {
-        api.getItemAPI().giveItem(killer, "berserker_trophy", 1);
-    }
-}
-```
-
-### 注册自定义效果
-
-```java
-api.getRegistryAPI().registerEffect("freeze", () -> new FreezeEffect());
-api.getRegistryAPI().registerCondition("has_permission", () -> new HasPermissionCondition());
-```
-
-### API 事件
-
-- `CustomItemSpawnEvent`
-- `CustomItemBuildEvent`
-- `CustomMobPreSpawnEvent`
-- `CustomMobSpawnEvent`
-- `CustomMobDeathEvent`
-- `CustomMobDropEvent`
-- `CustomMobSkillTriggerEvent`
-- `CustomMobSkillExecuteEvent`
-- `CustomMobDamageModifyEvent`
+基础命令的简写 `/gs` 同样可用。
 
 ---
 
-<a id="性能与安全"></a>
-## 性能与安全
+## 故障排查
 
-- 所有 YAML 配置在启动或 `/reload` 时一次性加载并缓存到内存。
-- 自定义怪物通过 `PersistentDataContainer` 追踪，避免内存泄漏。
-- 技能冷却存储在怪物 PDC 中，而非内存映射。
-- 粒子效果遵守可配置的可视距离。
-- ADD 模式生成受玩家、距离、尝试次数和密度限制的多重节流。
-- 所有文件 I/O 使用 try-with-resources，并针对单个文件进行错误处理。
-- 属性值经过校验，防止溢出。
+### 构建失败
 
----
+**问题**：Maven 构建时报依赖解析错误。
 
-<a id="常见问题"></a>
-## 常见问题
+**解决方案**：
 
-### "UnsupportedClassVersionError"
-你的服务端 Java 版本低于 25。请升级到 Java 25+。
+```bash
+# 清除本地 Maven 缓存中该项目的依赖
+rm -rf ~/.m2/repository/net/sakurain/mc/aeternumgenesis
+mvn clean package -DskipTests
+```
 
-### "Legacy Material Support" 警告
-请确保 `plugin.yml` 包含 `api-version: '26.1.2'`（默认已设置）。
+### UnsupportedClassVersionError
 
-### 怪物/物品未加载
-- 查看控制台是否有 YAML 解析错误。
+**问题**：服务端加载插件时报 `UnsupportedClassVersionError`。
+
+**解决方案**：将服务端运行环境升级到 Java 25 或更新版本。AeternumGenesis 针对 Java 25 编译。
+
+### 旧版材料支持警告
+
+**问题**：控制台出现旧版材料支持警告。
+
+**解决方案**：确保 `plugin.yml` 包含 `api-version: '1.21.1'`。该值默认已设置。
+
+### 物品或怪物未加载
+
+**问题**：自定义物品或怪物在游戏中未出现。
+
+**解决方案**：
+
+- 检查控制台是否有 YAML 解析错误。
 - 确认文件路径位于 `plugins/AeternumGenesis/items/`、`mobs/`、`skills/`、`spawns/` 或 `sets/` 下。
 - 确保同类型模板 ID 在所有文件中唯一。
+- 修改后执行 `/genesis reload`。
 
 ### 生成规则不生效
-- 对于 `REPLACE`/`DENY`，必须开启原版生物生成（`doMobSpawning`）。
-- 检查 `worlds`、`biomes` 和 `conditions` 是否匹配目标环境。
-- 确认密度限制未被触发。
+
+**问题**：自定义怪物未自然生成。
+
+**解决方案**：
+
+- 对于 `REPLACE` 和 `DENY` 动作，需要开启原版生物生成（`doMobSpawning`）。
+- 检查 `worlds`、`biomes` 和 `conditions` 是否与目标环境匹配。
+- 确认密度限制未被提前占满。
+- 如果多个规则针对同一种原版怪物，可适当提高 `priority`。
+
+### 技能未触发
+
+**问题**：怪物技能没有执行。
+
+**解决方案**：
+
+- 确认怪物 `skills` 列表中的技能 ID 与已加载的技能模板匹配。
+- 检查技能条件，如生命值百分比、昼夜状态或冷却状态。
+- 确保技能绑定到了支持的触发器。
 
 ---
 
-<a id="许可证"></a>
+## 贡献指南
+
+欢迎贡献。请按以下流程进行：
+
+1. Fork 本仓库。
+2. 创建功能分支：`git checkout -b feature/your-feature`。
+3. 按照代码风格指南进行修改。
+4. 在本地构建并测试：`mvn clean package`。
+5. 使用清晰的提交信息：`git commit -m 'feat: add new feature'`。
+6. 推送到你的 Fork：`git push origin feature/your-feature`。
+7. 向主分支提交 Pull Request。
+
+### 代码质量要求
+
+提交 Pull Request 前请确认：
+
+- [ ] 使用 `mvn clean package -DskipTests` 能成功构建。
+- [ ] 代码遵循项目命名规范。
+- [ ] 新功能包含 YAML 示例或文档更新。
+- [ ] API 变更包含 README 中 API 参考的更新。
+- [ ] 没有引入新的编译器警告。
+
+---
+
 ## 许可证
 
-本项目基于 [MIT License](LICENSE) 开源。
+本项目采用 MIT 许可证。
 
 ```
+MIT License
+
 Copyright (c) 2026 Yuyang.Wang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ---
 
-<a id="致谢"></a>
 ## 致谢
 
-- **作者：** Yuyang.Wang
-- **仓库：** [IYeaSakura/AeternumGenesis](https://github.com/IYeaSakura/AeternumGenesis)
-- **技术支持：** [PaperMC](https://papermc.io/)
+本项目得益于以下开源项目和社区的支持：
 
-如果发现 Bug 或有功能建议，欢迎提交 [issue](../../issues) 或 pull request。
+- [PaperMC](https://papermc.io/) - 高性能 Minecraft 服务端软件
+- [OpenJDK](https://openjdk.org/) - Java 开发工具包
+- [Apache Maven](https://maven.apache.org/) - 构建与依赖管理
+- [Adventure](https://docs.advntr.dev/) - Minecraft 用户界面库
+
+---
+
+## 联系方式
+
+- **作者**：Yuyang.Wang
+- **仓库**：[IYeaSakura/AeternumGenesis](https://github.com/IYeaSakura/AeternumGenesis)
+- **GitHub**：[https://github.com/IYeaSakura](https://github.com/IYeaSakura)
+
+如发现 Bug 或有功能建议，请提交 [issue](../../issues) 或 Pull Request。
